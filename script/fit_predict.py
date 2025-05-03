@@ -140,7 +140,8 @@ def show_df_size(df: pl.DataFrame, name: str):
 
 def remove_recommended(remaining_df: pl.LazyFrame, recommended_df: pl.DataFrame):
     # Remove recommended items from remaining_df
-    remaining_df = remaining_df.filter(~pl.col("id").is_in(recommended_df.select("id")))
+    recommended_ids = recommended_df.select("id").to_series()
+    remaining_df = remaining_df.filter(~pl.col("id").is_in(recommended_ids))
     return remaining_df
 
 """
