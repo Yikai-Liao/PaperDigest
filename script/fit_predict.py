@@ -102,7 +102,7 @@ def load_lazy_dataset(config, preferences: pl.DataFrame):
     # filter and collect the dataset
     lazy_df = df.filter(filter_condition)
     
-    preference_ids = preferences.select("id").to_series()
+    preference_ids = preferences.select("id").to_series().implode()
     indicator_col_name = "__is_preferred__" # Using a distinct name
     database = lazy_df.with_columns(
         pl.col("id").is_in(preference_ids).alias(indicator_col_name)
@@ -140,7 +140,7 @@ def show_df_size(df: pl.DataFrame, name: str):
 
 def remove_recommended(remaining_df: pl.LazyFrame, recommended_df: pl.DataFrame):
     # Remove recommended items from remaining_df
-    recommended_ids = recommended_df.select("id").to_series()
+    recommended_ids = recommended_df.select("id").to_series().implode()
     remaining_df = remaining_df.filter(~pl.col("id").is_in(recommended_ids))
     return remaining_df
 
@@ -682,12 +682,7 @@ def predict_and_save(model, remaining_df, recommended_df, config):
         results_df = results_df.drop(*embedding_columns)
     logger.debug(f"{results_df}")
     # 保存结果到CSV
-    output_dir = REPO_ROOT / "predictions"
-    output_dir.mkdir(exist_ok=True)
-    
-    # 创建带有时间戳的文件名
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M")
-    output_file = output_dir / f"predictions_{timestamp}.parquet"
+    output_file = REPO_ROOT / "predictions.parquet"
     
     # 保存
     results_df.write_parquet(output_file)
