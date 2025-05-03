@@ -5,4 +5,4 @@ tqdm
 arxiv
 toml
 loguru
-huggingface-cli
+huggingface_hub[cli]
