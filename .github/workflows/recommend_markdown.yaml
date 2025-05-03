@@ -17,10 +17,10 @@ jobs:
       batch_list: ${{ steps.split_dirs.outputs.batch_list }}
     steps:
       - name: 检出代码
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: 设置 Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
           cache: 'pip'
@@ -137,7 +137,7 @@ jobs:
 
     steps:
       - name: 检出代码
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: 设置 Python
         uses: actions/setup-python@v4
@@ -145,7 +145,7 @@ jobs:
           python-version: '3.10'
 
       - name: 下载 PDF 批次
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: pdf-batches
           path: pdf_batches
@@ -178,7 +178,7 @@ jobs:
           fi
 
       - name: 上传处理结果
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: extracted-${{ matrix.batch }}
           path: extracted_mds/
@@ -190,7 +190,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 下载所有处理结果
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: all_artifacts
 
@@ -214,7 +214,7 @@ jobs:
           echo "合并完成! 共 $total_dirs 个文档目录，$total_md 个 Markdown 文件"
 
       - name: 上传合并结果
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: processed-papers
           path: merged_results/
@@ -240,7 +240,7 @@ jobs:
           done
 
       - name: 上传处理报告
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: processing-report
           path: processing_report.md
