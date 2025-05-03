@@ -25,7 +25,13 @@ jobs:
 
       - name: 安装依赖
         run: |
-          pip install -r requirements.txt || pip install requests polars toml loguru tqdm scikit-learn numpy
+          pip install -r requirements.txt
+
+      - name: Hugging Face 登录
+        env:
+          HUGGINGFACE_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
+        run: |
+          huggingface-cli login --token $HUGGINGFACE_TOKEN
 
       - name: 运行预测模型
         run: python script/fit_predict.py
