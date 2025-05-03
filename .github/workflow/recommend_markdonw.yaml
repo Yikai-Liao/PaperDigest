@@ -1,0 +1,221 @@
+name: PDF Processing Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      matrix_count:
+        description: '并行处理任务数量'
+        required: true
+        default: '4'
+        type: number
+
+jobs:
+  prepare_data:
+    name: 预测并下载 PDF 文件
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v3
+
+      - name: 设置 Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: 安装依赖
+        run: |
+          pip install -r requirements.txt || pip install requests polars toml loguru tqdm scikit-learn numpy
+
+      - name: 运行预测模型
+        run: python script/fit_predict.py
+        
+      - name: 下载 PDF 文件
+        run: python script/download_pdf.py
+
+      - name: 拆分 PDF 目录
+        id: split_dirs
+        run: |
+          # 创建任务分割目录
+          mkdir -p pdf_batches
+          
+          # 获取总 PDF 文件数
+          total_files=$(find pdfs -name "*.pdf" | wc -l)
+          matrix_count=${{ github.event.inputs.matrix_count }}
+          
+          # 确保 matrix_count 不超过文件总数
+          if [ $matrix_count -gt $total_files ]; then
+            matrix_count=$total_files
+          fi
+          
+          echo "总文件数: $total_files"
+          echo "任务数量: $matrix_count"
+          
+          # 计算每个批次应包含的文件数
+          files_per_batch=$(( (total_files + matrix_count - 1) / matrix_count ))
+          echo "每个任务处理文件数: $files_per_batch"
+          
+          # 创建目录结构
+          for i in $(seq 1 $matrix_count); do
+            mkdir -p "pdf_batches/batch_$i"
+          done
+          
+          # 将 PDF 文件分配到不同批次目录
+          counter=0
+          batch_num=1
+          
+          # 根据文件名排序，确保相同的分配
+          find pdfs -name "*.pdf" | sort | while read pdf_file; do
+            # 复制到相应批次目录
+            cp "$pdf_file" "pdf_batches/batch_$batch_num/"
+            
+            counter=$((counter + 1))
+            if [ $counter -ge $files_per_batch ] && [ $batch_num -lt $matrix_count ]; then
+              counter=0
+              batch_num=$((batch_num + 1))
+            fi
+          done
+          
+          # 统计每个批次包含的文件数
+          echo "批次分配情况:"
+          total_batches=0
+          for i in $(seq 1 $matrix_count); do
+            file_count=$(find "pdf_batches/batch_$i" -name "*.pdf" | wc -l)
+            echo "batch_$i: $file_count 个文件"
+            if [ $file_count -gt 0 ]; then
+              total_batches=$((total_batches + 1))
+            fi
+          done
+          
+          # 生成批次列表供后续 matrix 使用
+          seq 1 $total_batches | sed 's/^/batch_/' > pdf_batches/batch_list.txt
+          echo "batch_list=$(cat pdf_batches/batch_list.txt | tr '\n' ',' | sed 's/,$//')" >> $GITHUB_OUTPUT
+          
+          echo "实际使用批次数: $total_batches"
+
+      - name: 上传 PDF 批次
+        uses: actions/upload-artifact@v3
+        with:
+          name: pdf-batches
+          path: pdf_batches/
+          retention-days: 1
+
+  process_pdfs:
+    name: 处理 PDF 批次 ${{ matrix.batch }}
+    needs: prepare_data
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        batch: ${{ fromJson(format('[{0}]', needs.prepare_data.outputs.batch_list)) }}
+      fail-fast: false
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v3
+
+      - name: 设置 Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: 下载 PDF 批次
+        uses: actions/download-artifact@v3
+        with:
+          name: pdf-batches
+          path: pdf_batches
+
+      - name: 安装 marker-pdf
+        run: pip install marker-pdf
+
+      - name: 处理 PDF 文件
+        run: |
+          # 创建输出目录
+          mkdir -p extracted_mds
+          
+          # 获取当前批次
+          BATCH_DIR="pdf_batches/${{ matrix.batch }}"
+          echo "处理批次目录: $BATCH_DIR"
+          
+          # 检查目录中的文件数量
+          pdf_count=$(find "$BATCH_DIR" -name "*.pdf" | wc -l)
+          echo "该批次包含 $pdf_count 个 PDF 文件"
+          
+          if [ $pdf_count -gt 0 ]; then
+            # 使用 marker 处理整个目录
+            marker "$BATCH_DIR" --disable_image_extraction --output_dir ./extracted_mds --workers 2
+            
+            # 统计处理结果
+            md_count=$(find ./extracted_mds -name "*.md" | wc -l)
+            echo "成功提取了 $md_count 个 Markdown 文件"
+          else
+            echo "该批次没有 PDF 文件，跳过处理"
+          fi
+
+      - name: 上传处理结果
+        uses: actions/upload-artifact@v3
+        with:
+          name: extracted-${{ matrix.batch }}
+          path: extracted_mds/
+          retention-days: 1
+
+  merge_results:
+    name: 合并所有处理结果
+    needs: process_pdfs
+    runs-on: ubuntu-latest
+    steps:
+      - name: 下载所有处理结果
+        uses: actions/download-artifact@v3
+        with:
+          path: all_artifacts
+
+      - name: 合并结果
+        run: |
+          mkdir -p merged_results
+          
+          # 将所有批次的结果合并到一个目录
+          echo "合并所有批次的处理结果..."
+          find all_artifacts -path "*/extracted-batch_*/*" -type d -not -path "*/\.*" -mindepth 0 -maxdepth 0 | while read dir; do
+            if [ -d "$dir" ]; then
+              echo "复制目录: $dir"
+              cp -r "$dir"/* merged_results/ || true
+            fi
+          done
+          
+          # 统计结果
+          total_dirs=$(find merged_results -type d -not -path "*/\.*" -mindepth 1 -maxdepth 1 | wc -l)
+          total_md=$(find merged_results -name "*.md" | wc -l)
+          
+          echo "合并完成! 共 $total_dirs 个文档目录，$total_md 个 Markdown 文件"
+
+      - name: 上传合并结果
+        uses: actions/upload-artifact@v3
+        with:
+          name: processed-papers
+          path: merged_results/
+          retention-days: 7
+
+      - name: 创建处理报告
+        run: |
+          echo "# PDF 处理报告" > processing_report.md
+          echo "" >> processing_report.md
+          echo "## 处理统计" >> processing_report.md
+          echo "" >> processing_report.md
+          echo "- 总任务数: ${{ github.event.inputs.matrix_count }}" >> processing_report.md
+          echo "- 处理的论文数: $(find merged_results -type d -not -path "*/\.*" -mindepth 1 -maxdepth 1 | wc -l)" >> processing_report.md
+          echo "- 生成的 Markdown 文件数: $(find merged_results -name "*.md" | wc -l)" >> processing_report.md
+          echo "" >> processing_report.md
+          echo "## 处理详情" >> processing_report.md
+          echo "" >> processing_report.md
+          
+          find merged_results -type d -not -path "*/\.*" -mindepth 1 -maxdepth 1 | sort | while read dir; do
+            dir_name=$(basename "$dir")
+            md_count=$(find "$dir" -name "*.md" | wc -l)
+            echo "- **$dir_name**: $md_count 个 Markdown 文件" >> processing_report.md
+          done
+
+      - name: 上传处理报告
+        uses: actions/upload-artifact@v3
+        with:
+          name: processing-report
+          path: processing_report.md
+          retention-days: 7

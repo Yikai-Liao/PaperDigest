@@ -2,5 +2,4 @@ scikit-learn
 numpy
 polars
 tqdm
-datasets
 arxiv

@@ -174,3 +174,5 @@ cython_debug/
 .pypirc
 
 predictions
+pdfs
+extracted_mds

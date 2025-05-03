@@ -38,13 +38,18 @@ max_iter = 1000
 
 
 [fit_predict.predict]
-last_n_days = 7
+last_n_days = 2
 start_date = "" # YYYY-MM-DD
 end_date = "" # YYYY-MM-DD
 
 high_threshold = 0.95
 boundary_threshold = 0.5
-sample_rate = 0.15
+sample_rate = 0.05
+
+[download_pdf]
+output_dir = "./pdfs"
+delay = 3
+max_retry = 3
 
 [summary]
 # Replace with your actual API key if needed, or leave empty if using environment variables
