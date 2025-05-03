@@ -185,63 +185,30 @@ jobs:
           retention-days: 1
 
   merge_results:
-    name: 合并所有处理结果
-    needs: process_pdfs
+    name: 合并所有 Markdown 文件
     runs-on: ubuntu-latest
+    needs: process_pdfs
     steps:
-      - name: 下载所有处理结果
+      - name: 下载所有 artifact
         uses: actions/download-artifact@v4
         with:
           path: all_artifacts
 
-      - name: 合并结果
+      - name: 合并 Markdown 文件到一个文件夹
         run: |
-          mkdir -p merged_results
+          # 创建目标文件夹
+          mkdir -p merged_mds
           
-          # 将所有批次的结果合并到一个目录
-          echo "合并所有批次的处理结果..."
-          find all_artifacts -path "*/extracted-batch_*/*" -type d -not -path "*/\.*" -mindepth 0 -maxdepth 0 | while read dir; do
-            if [ -d "$dir" ]; then
-              echo "复制目录: $dir"
-              cp -r "$dir"/* merged_results/ || true
-            fi
-          done
+          # 找到所有 .md 文件并复制到 merged_mds/
+          find all_artifacts -name "*.md" -type f -exec cp {} merged_mds/ \;
           
-          # 统计结果
-          total_dirs=$(find merged_results -type d -not -path "*/\.*" -mindepth 1 -maxdepth 1 | wc -l)
-          total_md=$(find merged_results -name "*.md" | wc -l)
-          
-          echo "合并完成! 共 $total_dirs 个文档目录，$total_md 个 Markdown 文件"
+          # 检查合并的文件数量
+          total_md=$(find merged_mds -name "*.md" | wc -l)
+          echo "成功合并了 $total_md 个 Markdown 文件"
 
-      - name: 上传合并结果
+      - name: 上传合并后的文件夹
         uses: actions/upload-artifact@v4
         with:
-          name: processed-papers
-          path: merged_results/
-          retention-days: 7
-
-      - name: 创建处理报告
-        run: |
-          echo "# PDF 处理报告" > processing_report.md
-          echo "" >> processing_report.md
-          echo "## 处理统计" >> processing_report.md
-          echo "" >> processing_report.md
-          echo "- 总任务数: ${{ github.event.inputs.matrix_count }}" >> processing_report.md
-          echo "- 处理的论文数: $(find merged_results -type d -not -path "*/\.*" -mindepth 1 -maxdepth 1 | wc -l)" >> processing_report.md
-          echo "- 生成的 Markdown 文件数: $(find merged_results -name "*.md" | wc -l)" >> processing_report.md
-          echo "" >> processing_report.md
-          echo "## 处理详情" >> processing_report.md
-          echo "" >> processing_report.md
-          
-          find merged_results -type d -not -path "*/\.*" -mindepth 1 -maxdepth 1 | sort | while read dir; do
-            dir_name=$(basename "$dir")
-            md_count=$(find "$dir" -name "*.md" | wc -l)
-            echo "- **$dir_name**: $md_count 个 Markdown 文件" >> processing_report.md
-          done
-
-      - name: 上传处理报告
-        uses: actions/upload-artifact@v4
-        with:
-          name: processing-report
-          path: processing_report.md
+          name: merged-markdowns
+          path: merged_mds/
           retention-days: 7
