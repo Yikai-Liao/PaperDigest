@@ -3,3 +3,4 @@ numpy
 polars
 tqdm
 arxiv
+toml
