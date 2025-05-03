@@ -13,6 +13,8 @@ jobs:
   prepare_data:
     name: 预测并下载 PDF 文件
     runs-on: ubuntu-latest
+    outputs:
+      batch_list: ${{ steps.split_dirs.outputs.batch_list }}
     steps:
       - name: 检出代码
         uses: actions/checkout@v3
@@ -95,7 +97,13 @@ jobs:
           
           # 生成批次列表供后续 matrix 使用
           seq 1 $total_batches | sed 's/^/batch_/' > pdf_batches/batch_list.txt
-          echo "batch_list=$(cat pdf_batches/batch_list.txt | tr '\n' ',' | sed 's/,$//')" >> $GITHUB_OUTPUT
+          batch_list=$(cat pdf_batches/batch_list.txt | tr '\n' ',' | sed 's/,$//')
+          echo "batch_list=$batch_list" >> $GITHUB_OUTPUT
+          
+          # 确保输出不为空
+          if [ -z "$batch_list" ]; then
+            echo "batch_list=batch_1" >> $GITHUB_OUTPUT
+          fi
           
           echo "实际使用批次数: $total_batches"
 
@@ -112,7 +120,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        batch: ${{ fromJson(format('[{0}]', needs.prepare_data.outputs.batch_list)) }}
+        batch: ${{ fromJson(format('["{}"]', needs.prepare_data.outputs.batch_list)) }}
       fail-fast: false
 
     steps:
