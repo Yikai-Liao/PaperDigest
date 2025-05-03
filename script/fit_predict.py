@@ -102,10 +102,10 @@ def load_lazy_dataset(config, preferences: pl.DataFrame):
     # filter and collect the dataset
     lazy_df = df.filter(filter_condition)
     
-    # 
+    preference_ids = preferences.select("id").to_series()
     indicator_col_name = "__is_preferred__" # Using a distinct name
     database = lazy_df.with_columns(
-        pl.col("id").is_in(preferences.select("id")).alias(indicator_col_name)
+        pl.col("id").is_in(preference_ids).alias(indicator_col_name)
     )
 
     logger.info(f"Splitting collected data based on '{indicator_col_name}' column...")
