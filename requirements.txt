@@ -4,3 +4,4 @@ polars
 tqdm
 arxiv
 toml
+loguru
