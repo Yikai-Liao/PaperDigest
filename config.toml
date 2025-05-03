@@ -1,0 +1,47 @@
+[fit_predict]
+# Arxiv categories, note that only cs and stat are currently supported
+categories = ["cs.CL", "cs.CV", "cs.AI", "cs.LG", "stat.ML", "cs.IR", "cs.CY"]
+
+# Path to labeled preference data in multiple csv
+preference_dir = "./preference"
+raw_data_dir = "./raw"
+# The starting year to select background papers
+background_start_year = 2024
+preference_start_year = 2024
+
+# Path to the huggingface dataset with embedding for arxiv papers
+# This is pre computed and stored in the huggingface hub by lyk
+# And should be fixed if you don't the same things as him
+embedding_dataset = "lyk/ArxivEmbedding"
+# Two embedding models that are used to precompute the embeddings
+# The fit_predict.py script will use the concatenation of these two embeddings
+embedding_columns = ["jasper_v1", "conan_v1"]
+
+seed = 42
+neg_sample_ratio = 5.0
+
+[fit_predict.confidence_weighted_sampling]
+enable = true
+high_conf_threshold = 0.9
+high_conf_weight = 2.0
+
+[fit_predict.adaptive_difficulty_sampling]
+enable = true
+n_neighbors = 64
+pos_sampling_ratio = 2.0
+synthetic_ratio = 0.5
+k_smote = 16
+
+[fit_predict.logic_regression]
+C = 1
+max_iter = 1000
+
+
+[fit_predict.predict]
+last_n_days = 7
+start_date = "" # YYYY-MM-DD
+end_date = "" # YYYY-MM-DD
+
+high_threshold = 0.95
+boundary_threshold = 0.5
+sample_rate = 0.15
