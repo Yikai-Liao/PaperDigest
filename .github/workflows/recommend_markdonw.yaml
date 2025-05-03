@@ -94,7 +94,7 @@ jobs:
           echo "实际使用批次数: $total_batches"
 
       - name: 上传 PDF 批次
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: pdf-batches
           path: pdf_batches/
