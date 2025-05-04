@@ -376,19 +376,23 @@ def train_model(prefered_df: pl.DataFrame, remaining_df: pl.DataFrame, config: d
 
     # convert to numpy array, where x should be the concatenated embedding columns
     # and y should be the label column
-    x = combined_df.select(*embedding_columns).to_numpy()
+    # x = combined_df.select(*embedding_columns).to_numpy()
+    x = np.hstack([np.vstack(combined_df[col].to_numpy()) for col in embedding_columns])
     y = combined_df.select("label").to_numpy().ravel()
-    logger.info(f"x shape: {x.shape}, y shape: {y.shape}")
+    
+    samples_with_nan = np.isnan(x).any(axis=1).sum()
+    logger.warning(f"{samples_with_nan}个样本 ({samples_with_nan/x.shape[0]*100:.2f}%) 包含NaN值")
+    
+    # 方法1：用0填充NaN (简单方法)
+    x = np.nan_to_num(x, nan=0.0)
+    logger.info("已将所有NaN值替换为0")
 
-    # Debug purpose
-    x = np.random.rand(x.shape[0], x.shape[1])
-
+    logger.info(f"x: {x.dtype} | {x.shape}, y shape: {y.dtype} | {y.shape}")
     lg_config = config.get("logistic_regression", {})
     cws_config = config.get("confidence_weighted_sampling", {'enable': False})
 
     if cws_config.get("enable", False):
         logger.info("Using confidence weighted sampling...")
-
         tmp_model = sklearn.linear_model.LogisticRegression(
             C=lg_config.get("C", 1.0),
             max_iter=lg_config.get("max_iter", 1000),
@@ -408,9 +412,8 @@ def train_model(prefered_df: pl.DataFrame, remaining_df: pl.DataFrame, config: d
 
     ads_config = config.get("adaptive_difficulty_sampling", {'enable': False})
     if ads_config.get("enable", False):
-        unlabeled_data = remaining_df.select(*embedding_columns).to_numpy()
-        # Set to random for debug purpose
-        unlabeled_data = np.random.rand(unlabeled_data.shape[0], unlabeled_data.shape[1])
+        # unlabeled_data = remaining_df.select(*embedding_columns).to_numpy()
+        unlabeled_data = np.hstack([np.vstack(remaining_df[col].to_numpy()) for col in embedding_columns])
         x_pos = adaptive_difficulty_sampling(
             x[y == 1], unlabeled_data,
             n_neighbors=config.get("n_neighbors", 5),
@@ -490,9 +493,8 @@ def predict_and_recommend(model, remaining_df: pl.LazyFrame, recommended_df: pl.
     
     # 4. 提取特征和预测
     logger.info("提取特征并进行预测...")
-    X_target = target_df.select(*embedding_columns).to_numpy()
-    # Set to random for debug purpose
-    X_target = np.random.rand(X_target.shape[0], X_target.shape[1])
+    # X_target = target_df.select(*embedding_columns).to_numpy()
+    X_target = np.hstack([np.vstack(target_df[col].to_numpy()) for col in embedding_columns])
     
     # 使用模型预测"喜欢"的概率
     try:
