@@ -2,7 +2,7 @@
 import { slugifyStr } from "@/utils/slugify";
 import type { CollectionEntry } from "astro:content";
 import { getPath } from "@/utils/getPath";
-import { getPreferenceEmoji } from "@/utils/preference"; // 导入共享函数
+import { getPreferenceEmoji, SCORE_COLORS, SCORE_THRESHOLDS } from "@/utils/preference"; // 导入颜色常量
 import Datetime from "./Datetime.astro";
 
 export interface Props extends CollectionEntry<"blog"> {
@@ -41,11 +41,49 @@ const preferenceEmoji = getPreferenceEmoji(preference);
   <div class="flex items-center justify-between">
     <Datetime {pubDatetime} {modDatetime} {timezone} />
     {(formattedScore || preferenceEmoji) && (
-      <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-        {formattedScore && <span>{formattedScore}</span>}
+      <div class="flex items-center gap-2 text-sm">
+        {formattedScore && (
+          <span class="score-value font-medium">{formattedScore}</span>
+        )}
         {preferenceEmoji && <span class="text-base">{preferenceEmoji}</span>}
       </div>
     )}
   </div>
   <p>{description}</p>
 </li>
+
+<script define:vars={{ SCORE_COLORS, SCORE_THRESHOLDS }}>
+  // 监听主题变化，更新分数颜色
+  document.addEventListener('astro:page-load', () => {
+    function updateScoreColors() {
+      const isDarkTheme = document.documentElement.classList.contains('dark');
+      document.querySelectorAll('.score-value').forEach(el => {
+        const scoreText = el.textContent;
+        if (scoreText) {
+          const score = parseFloat(scoreText) / 100; // 转换回0-1范围
+          
+          // 根据分数和当前主题设置颜色
+          const theme = isDarkTheme ? SCORE_COLORS.dark : SCORE_COLORS.light;
+          
+          if (score < SCORE_THRESHOLDS.low) {
+            el.style.color = theme.low;
+          } else if (score < SCORE_THRESHOLDS.high) {
+            el.style.color = theme.medium;
+          } else {
+            el.style.color = theme.high;
+          }
+        }
+      });
+    }
+
+    // 初始更新颜色
+    updateScoreColors();
+
+    // 监听主题变化
+    const themeBtn = document.querySelector('#theme-btn');
+    themeBtn?.addEventListener('click', () => {
+      // 延迟执行，等待主题切换完成
+      setTimeout(updateScoreColors, 0);
+    });
+  });
+</script>
