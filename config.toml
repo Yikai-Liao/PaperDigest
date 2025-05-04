@@ -38,11 +38,11 @@ max_iter = 1000
 
 
 [fit_predict.predict]
-last_n_days = 2
+last_n_days = 14
 start_date = "" # YYYY-MM-DD
 end_date = "" # YYYY-MM-DD
 
-high_threshold = 0.95
+high_threshold = 0.9
 boundary_threshold = 0.5
 sample_rate = 0.05
 

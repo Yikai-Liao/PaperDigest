@@ -682,7 +682,6 @@ def predict_and_save(model, remaining_df, recommended_df, config):
     embedding_columns = config.get("embedding_columns", [])
     if embedding_columns:
         results_df = results_df.drop(*embedding_columns)
-    logger.debug(f"{results_df}")
     # 保存结果到CSV
     output_file = REPO_ROOT / "predictions.parquet"
     
@@ -693,6 +692,8 @@ def predict_and_save(model, remaining_df, recommended_df, config):
     # 提取并返回推荐的论文
     recommended_results = results_df.filter(pl.col("show") == 1)
     logger.info(f"推荐{recommended_results.height}篇论文")
+    show_df = recommended_results.select("id", "title", "abstract", "score")
+    logger.debug(f"{show_df}")
     
     return recommended_results
 
