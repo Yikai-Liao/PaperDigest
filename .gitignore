@@ -176,3 +176,4 @@ cython_debug/
 predictions
 pdfs
 extracted_mds
+predictions.parquet
