@@ -49,9 +49,15 @@ def main(owner, repo, token, out_path="discussions.json"):
         json={"query": query, "variables": variables},
         headers=headers,
     )
+    print(f"请求状态码: {resp.status_code}")
+    if resp.status_code != 200:
+        print(f"请求失败: {resp.text}")
+        sys.exit(1)
     resp.raise_for_status()
     with open(out_path, "w") as f:
         json.dump(resp.json(), f, indent=2, ensure_ascii=False)
+
+    print(resp.json())
         
     print(f"讨论数据已保存到 {out_path}")
 
