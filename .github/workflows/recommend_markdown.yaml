@@ -37,6 +37,12 @@ jobs:
 
       - name: 运行预测模型
         run: python script/fit_predict.py
+
+      - name: 上传预测结果
+        uses: actions/upload-artifact@v4
+        with:
+          name: predictions
+          path: predictions.parquet
         
       - name: 下载 PDF 文件
         run: python script/download_pdf.py
@@ -184,8 +190,21 @@ jobs:
           path: extracted_mds/
           retention-days: 1
 
+      
+      - name: AI 摘要
+        run: |
+          pip install -r requirements.txt
+          python script/summarize.py ./extracted_mds/
+
+      - name: 上传 AI 摘要结果
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-summary-${{ matrix.batch }}
+          path: ./extracted_mds/*.json
+          
+
   merge_results:
-    name: 合并所有 Markdown 文件
+    name: 合并所有文件
     runs-on: ubuntu-latest
     needs: process_pdfs
     steps:
@@ -206,9 +225,38 @@ jobs:
           total_md=$(find merged_mds -name "*.md" | wc -l)
           echo "成功合并了 $total_md 个 Markdown 文件"
 
-      - name: 上传合并后的文件夹
+      - name: 上传合并后的 Markdown 文件
         uses: actions/upload-artifact@v4
         with:
           name: merged-markdowns
           path: merged_mds/
+          retention-days: 7
+
+      - name: 合并 JSON 文件到一个文件夹
+        run: |
+          # 创建目标文件夹
+          mkdir -p merged_jsons
+          
+          # 找到所有 .json 文件并复制到 merged_jsons/
+          find all_artifacts -name "*.json" -type f -exec cp {} merged_jsons/ \;
+          
+          # 检查合并的文件数量
+          total_json=$(find merged_jsons -name "*.json" | wc -l)
+          echo "成功合并了 $total_json 个 JSON 文件"
+
+      - name: 下载预测结果
+        uses: actions/download-artifact@v4
+        with:
+          name: predictions
+
+      - name: 更新 json 元数据
+        run: |
+          pip install -r requirements.txt
+          python script/update_metadata.py -j merged_jsons -p predictions.parquet
+
+      - name: 上传合并后的 JSON 文件
+        uses: actions/upload-artifact@v4
+        with:
+          name: merged-jsons
+          path: merged_jsons/
           retention-days: 7
