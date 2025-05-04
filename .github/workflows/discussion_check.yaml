@@ -70,6 +70,7 @@ jobs:
           rm ./discussions.json
           git add ./raw/
           git add ./preference/
+          git add ./content/
           # 检查是否有变更需要提交
           if git diff --staged --quiet; then
             echo "没有变更，跳过提交"
