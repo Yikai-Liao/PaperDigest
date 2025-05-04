@@ -79,7 +79,7 @@ def main(discussions_path, repo_owner):
         pref = int2pref[min(reactions)]
         
         # 更新raw目录下的JSON文件
-        with open(json_idx[m].resolve(), "r", encoding="utf-8") as f:
+        with open(json_idx[stem].resolve(), "r", encoding="utf-8") as f:
             json_data = json.load(f)
         json_data["preference"] = pref
 
