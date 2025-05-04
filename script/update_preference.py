@@ -47,9 +47,9 @@ def main(discussions_path, repo_owner):
     
     # 处理每个讨论
     for node in nodes:
-        updated_at = node.get("updatedAt")
-            
         title = node.get("title", "")
+        title = title.strip()
+        title = title if title[-1] != "/" else title[:-1]
         stem = title.split("/")[-1].strip()
         if not stem:
             print(f"标题 '{title}' 无法提取stem，跳过")
@@ -90,13 +90,14 @@ def main(discussions_path, repo_owner):
     csv_path = Path("raw") / f"{datetime.now().strftime('%Y-%m')}.csv"
     if not csv_path.exists():
         print(f"文件 {csv_path} 不存在，创建新文件")
-        patch.write_csv(csv_path, has_header=True)
+        patch.write_csv(csv_path, include_header=True)
+        print(f"文件 {csv_path} 已创建，包含 {len(patch)} 行数据")
     else:
         # 读取，并覆盖可能重复的行，然后新增
         existing_data = pl.read_csv(csv_path)
         print(f"文件 {csv_path} 已存在，读取现有数据 {len(existing_data)} 行")
         combined_data = pl.concat([existing_data, patch]).unique(subset=["id"], keep="last")
-        combined_data.write_csv(csv_path, has_header=True)
+        combined_data.write_csv(csv_path, include_header=True)
         print(f"文件 {csv_path} 已更新，包含 {len(combined_data)} 行数据")
 
 if __name__ == "__main__":
