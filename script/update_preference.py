@@ -31,6 +31,9 @@ def main(discussions_path, repo_owner):
         discussions_path: 讨论数据JSON文件路径
         repo_owner: 仓库所有者
     """
+    json_idx = build_json_index(Path("raw"))
+    print(json_idx)
+
     with open(discussions_path, "r") as f:
         data = json.load(f)
     
@@ -40,7 +43,6 @@ def main(discussions_path, repo_owner):
         print("未找到讨论数据")
         return
     
-    json_idx = build_json_index(Path("raw"))
     
     ids = []
     prefs = []
@@ -60,7 +62,7 @@ def main(discussions_path, repo_owner):
             print(f"标题 '{title}' 的stem '{stem}' 不符合arxiv ID格式，跳过")
             continue
 
-        if m not in json_idx:
+        if stem not in json_idx:
             print(f"标题 '{title}' 的stem '{stem}' 不在raw目录下的JSON文件中，跳过")
             continue
 
