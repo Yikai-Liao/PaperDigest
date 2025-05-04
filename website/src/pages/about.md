@@ -3,6 +3,10 @@ layout: ../layouts/AboutLayout.astro
 title: "About"
 ---
 
+<div>
+  <img src="/ai_reading.webp" class="sm:w-1/2 mx-auto" alt="coding dev illustration">
+</div>
+
 Paper Digest is a fully open-sourced project aim to help researchers and students to filter out the papers that they are interested in. 
 
 For the recommendation system part, I simply use strategies similar to those from https://www.scholar-inbox.com:

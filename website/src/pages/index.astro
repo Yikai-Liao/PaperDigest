@@ -24,39 +24,50 @@ const recentPosts = sortedPosts.filter(({ data }) => !data.featured);
   <Header />
   <main id="main-content" data-layout="index">
     <section id="hero" class="pt-8 pb-6">
-      <h1 class="my-4 inline-block text-4xl font-bold sm:my-8 sm:text-5xl">
-        Paper Digest
-      </h1>
-      <a
-        target="_blank"
-        href="/rss.xml"
-        class="inline-block"
-        aria-label="rss feed"
-        title="RSS Feed"
-      >
-        <IconRss
-          width={20}
-          height={20}
-          class="scale-125 stroke-accent stroke-3"
-        />
-        <span class="sr-only">RSS Feed</span>
-      </a>
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-8">
+        <div class="md:w-2/3">
+          <h1 class="my-4 inline-block text-4xl font-bold sm:my-8 sm:text-5xl">
+            Paper Digest
+          </h1>
+          <a
+            target="_blank"
+            href="/rss.xml"
+            class="inline-block"
+            aria-label="rss feed"
+            title="RSS Feed"
+          >
+            <IconRss
+              width={20}
+              height={20}
+              class="scale-125 stroke-accent stroke-3"
+            />
+            <span class="sr-only">RSS Feed</span>
+          </a>
 
-      <p>
-        Paper Digest is a totally free and open-source project that
-        automatically generates a personalized paper digest for you
-        based on your preferences. This project is powered by lots of great projects,
-        and many thanks to them.
-      </p>
-      {
-        // only display if at least one social link is enabled
-        SOCIALS.length > 0 && (
-          <div class="mt-4 flex flex-col sm:flex-row sm:items-center">
-            <div class="mr-2 mb-1 whitespace-nowrap sm:mb-0">Social Links:</div>
-            <Socials />
-          </div>
-        )
-      }
+          <p>
+            Paper Digest is a totally free and open-source project that
+            automatically generates a personalized paper digest for you
+            based on your preferences. This project is powered by lots of great projects,
+            and many thanks to them.
+          </p>
+          {
+            // only display if at least one social link is enabled
+            SOCIALS.length > 0 && (
+              <div class="mt-4 flex flex-col sm:flex-row sm:items-center">
+                <div class="mr-2 mb-1 whitespace-nowrap sm:mb-0">Social Links:</div>
+                <Socials />
+              </div>
+            )
+          }
+        </div>
+        <div class="md:w-1/2 flex justify-center">
+          <img 
+            src="./ai_reading.webp"
+            alt="Paper Digest Robot" 
+            class="aspect-square w-full max-w-[250px] rounded-lg object-cover"
+          />
+        </div>
+      </div>
     </section>
 
     <Hr />
