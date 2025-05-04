@@ -7,7 +7,7 @@ export enum SortType {
   DATE_DESC = "date_desc",
   // 按发布/修改日期排序（最旧的在前）
   DATE_ASC = "date_asc",
-  // 按论文发布日期排序（最新的在前）
+  // 按论文ID排序（最新的在前，根据arXiv ID提取日期）
   PAPER_DATE_DESC = "paper_date_desc",
   // 按偏好分数排序（高分在前）
   SCORE_DESC = "score_desc",
@@ -97,12 +97,27 @@ const getSortedPosts = (
       );
       
     case SortType.PAPER_DATE_DESC:
-      // 假设论文发布日期存储在 paperDate 字段中
+      // 从文章ID（slug）中提取日期信息进行排序
       return filteredPosts.sort(
         (a, b) => {
-          const aPaperDate = a.data.paperDate ? new Date(a.data.paperDate).getTime() : 0;
-          const bPaperDate = b.data.paperDate ? new Date(b.data.paperDate).getTime() : 0;
-          return bPaperDate - aPaperDate;
+          // 尝试从slug中提取arXiv ID格式的日期 (YYMM.number)
+          const extractDateFromSlug = (slug: string): number => {
+            // 匹配类似 YYMM.xxxxx 的模式
+            const match = slug.match(/(\d{4})\.(\d+)/);
+            if (match) {
+              const yearMonth = match[1];
+              // 转换为时间戳，用于排序
+              const year = 2000 + parseInt(yearMonth.substring(0, 2));
+              const month = parseInt(yearMonth.substring(2, 4)) - 1; // 月份从0开始
+              return new Date(year, month, 1).getTime();
+            }
+            // 如果无法提取日期，则返回0
+            return 0;
+          };
+          
+          const aTimestamp = extractDateFromSlug(a.id);
+          const bTimestamp = extractDateFromSlug(b.id);
+          return bTimestamp - aTimestamp;
         }
       );
       

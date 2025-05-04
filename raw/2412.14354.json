@@ -1,0 +1,40 @@
+{
+    "title": "State Space Models are Strong Text Rerankers",
+    "authors": [
+        "Zhichao Xu",
+        "Jinghua Yan",
+        "Ashim Gupta",
+        "Vivek Srikumar"
+    ],
+    "institution": [
+        "University of Utah"
+    ],
+    "problem_background": "Transformer 架构在自然语言处理 (NLP) 和信息检索 (IR) 领域占据主导地位，但其在推理时存在效率问题，且在处理长上下文时面临挑战，例如时间复杂度为 O(L) 和空间复杂度为 O(LD)，这使得其不如循环神经网络 (RNN) 高效。最近，人们对替代架构产生了兴趣，其中状态空间模型 (SSMs) 如 Mamba 展示了潜力，因为它们可以将上下文压缩到一个较小的状态中，实现 O(1) 时间复杂度和 O(ND) 空间复杂度。然而，SSMs 在文本重排序任务中的有效性——这一任务需要细粒度的查询-文档交互和长上下文理解——尚未得到充分探索。本文从性能和效率角度出发，benchmark SSMs 与 Transformer 模型，旨在解决 SSMs 是否能作为 Transformer 的替代方案，并探讨其在 IR 应用中的潜力。",
+    "method": "*   **核心思想:** 本文的核心是比较状态空间模型 (SSMs) 架构，特别是 Mamba-1 和 Mamba-2，与 Transformer 架构在文本重排序任务中的性能和效率。SSMs 通过将输入序列映射到一个隐状态中来建模序列数据，具体来说，SSMs 定义了一个连续的序列到序列转换：$$ h'(t) = A h(t) + B x(t) \\quad y(t) = C h(t) $$，然后通过离散化得到：$$ h_t = \bar{A} h_{t-1} + \bar{B} x_t \\quad y_t = C h_t $$，其中参数 (Δ, A, B, C) 可以是输入相关的，以提高模型的表达能力，如 Mamba-1 和 Mamba-2 所做。Mamba-2 进一步将 A 矩阵限制为标量乘单位矩阵，并引入 SSM 头维度 P，以提高效率。\n*   **如何实现:** 作者遵循现有的训练方法，训练重排序模型，包括不同架构、规模和预训练目标。重排序模型通过将查询和文档拼接作为输入，预测一个相关性分数，使用 softmax 损失函数优化：$$ -\frac{1}{|\\mathcal{S}|} \\sum_{(q_i, d_i^+) \notin \\mathcal{S}} \frac{\text{log} \frac{\text{exp} f_\theta(q_i, d_i^+)}{\text{exp} f_\theta(q_i, d_i^+) + \text{sum}_{j \notin \text{D}_i^-} \text{exp} f_\theta(q_i, d_i^-)} } $$。对于 autoregressive 模型，如 Mamba，使用模板 'document: {d} ; query: {q} ; [EOS]'，并在 [EOS] 标记上应用线性层。对于 encoder-only 模型，使用 '[CLS] ; query: {q} ; document: {d}' 模板。\n*   **主要步骤:** 包括选择预训练模型 (如 BERT、RoBERTa、Mamba 等)，微调模型以适应重排序任务，使用硬负样本采样，并评估不同设置下的性能。",
+    "experiment": "*   **数据集和评估指标:** 作者使用 MS MARCO 数据集进行通道重排序和文档重排序实验，MS MARCO 包含 524K 个通道重排序训练实例和 320K 个文档重排序训练实例。使用 BGE-large-en-v1.5 作为第一阶段检索器，采样硬负样本 (通道重排序采样 15 个，文档重排序采样 7 个)。评估指标包括 MRR@10 和 NDCG@10，对于域外评估，使用 BEIR 数据集的 13 个测试集，报告 NDCG@10。实验设置旨在平衡性能和硬件资源，采用统一微调方法。\n*   **实验设计原因:** 实验设计选择多种预训练模型 (Transformer 和 SSMs) 以比较不同架构、规模和预训练目标的影响，这是因为 Transformer 模型在预训练数据量和目标上存在差异，SSMs 的优势在于理论复杂度，但实际效率需验证。作者使用 Flash Attention 等优化技术，并避免使用参数高效微调如 LoRA，以突出架构差异。\n*   **结果分析:** 在通道重排序中，Mamba 模型性能与同规模 Transformer 相当，例如 Mamba-2-370M 在 MRR@10 和 NDCG@10 上接近 BERT-large；但在训练和推理效率上，Mamba 模型低于使用 Flash Attention 的 Transformer。Mamba-2 优于 Mamba-1，在性能和效率上均有改善。文档重排序结果类似，Mamba 模型在长上下文处理上竞争性强，但内存效率问题导致部分模型 OOM。结果符合预期，证明 SSMs 在文本重排序中的潜力，但效率需进一步优化。",
+    "one_sentence_summary": "本文通过全面benchmark比较状态空间模型如Mamba与Transformer在文本重排序任务中的性能和效率，发现Mamba模型可实现类似性能但效率较低，并强调了未来优化方向。",
+    "slug": "state-space-models-text-rerankers",
+    "keywords": [
+        "State Space Model",
+        "Text Reranking",
+        "Transformer",
+        "Efficiency",
+        "Information Retrieval"
+    ],
+    "further_thoughts": "本文的benchmark结果提示SSMs在IR任务中的潜力值得进一步探索，例如在文本检索中的应用，可能通过结合注意力机制的混合模型来提升性能；同时，SSMs的硬件优化问题，如减少标量提取操作的开销，能够借鉴Transformer的I/O优化技术；此外，与其他领域如图像或音频处理的SSMs工作相结合，可能开发出更通用的序列模型架构。",
+    "model": "grok-3-mini-latest",
+    "temperature": 0.5,
+    "top_p": 0.7,
+    "lang": "zh",
+    "id": "2412.14354",
+    "preference": "unknown",
+    "summary_time": "2025-05-04T08:26:21.357349+00:00",
+    "score": 0.5053358303642196,
+    "abstract": "Transformers dominate NLP and IR; but their inference inefficiencies and challenges in extrapolating to longer contexts have sparked interest in alternative model architectures. Among these, state space models (SSMs) like Mamba offer promising advantages, particularly $O(1)$ time complexity in inference. Despite their potential, SSMs' effectiveness at text reranking -- a task requiring fine-grained query-document interaction and long-context understanding -- remains underexplored. This study benchmarks SSM-based architectures (specifically, Mamba-1 and Mamba-2) against transformer-based models across various scales, architectures, and pre-training objectives, focusing on performance and efficiency in text reranking tasks. We find that (1) Mamba architectures achieve competitive text ranking performance, comparable to transformer-based models of similar size; (2) they are less efficient in training and inference compared to transformers with flash attention; and (3) Mamba-2 outperforms Mamba-1 in both performance and efficiency. These results underscore the potential of state space models as a transformer alternative and highlight areas for improvement in future IR applications.",
+    "categories": [
+        "cs.CL",
+        "cs.IR"
+    ],
+    "created": "2025-04-22",
+    "updated": "2025-04-23"
+}

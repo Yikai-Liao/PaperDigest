@@ -1,0 +1,44 @@
+{
+    "title": "A closer look at how large language models trust humans: patterns and biases",
+    "authors": [
+        "Valeria Lerman",
+        "Yaniv Dover"
+    ],
+    "institution": [
+        "The Hebrew University Business School",
+        "The Federmann Center for the Study of Rationality"
+    ],
+    "problem_background": "随着大型语言模型（LLMs）和基于LLM的代理在决策环境中与人类互动日益增多，理解AI对人类的信任动态变得至关重要。现有的研究主要关注人类对AI的信任，而AI对人类的信任机制鲜有探讨。本文基于行为理论，探讨LLMs是否像人类一样，其信任受人类受托者的能力、仁慈和正直等可信度维度影响，以及人口统计学变量（如年龄、宗教和性别）对信任的影响。研究背景强调，LLMs在决策中的应用可能隐含对人类的有效信任，这可能导致偏差和有害结果，因此需要通过实验验证LLMs信任形成的模式。",
+    "method": "本文的核心思想是通过模拟实验框架，基于心理信任理论（Mayer et al., 1995）量化LLMs对人类的隐性信任。具体方法包括：\n- **三阶段提示过程**：首先，通过初始提示描述受托者的可信度维度（能力、仁慈、正直）和人口统计学属性（高/低水平组合）；其次，通过信任量化提示要求LLM在具体场景中输出信任量（如贷款金额或信任分数）；最后，使用标准化信任问卷（Mayer & Davis, 1999）评估LLM对可信度维度的感知。\n- **实验设计**：跨五个场景（高层管理者、贷款请求、捐赠请求、旅行指导、保姆选择）和五个LLM模型（ChatGPT 3.5 Turbo、Gemini Pro 1.5、ChatGPT 4o Mini、OpenAI o3-mini、Gemini Flash 2）进行43,200次模拟实验。使用OLS回归分析信任与可信度维度及人口统计学变量的关系，公式为：\n$$\\begin{aligned} Trust_{\\{i,k,j\\}} &= \\beta_0 + \\beta_1 \\cdot Competence_{\\{i,k,j\\}} + \\beta_2 \\cdot Benevolence_{\\{i,k,j\\}} + \\beta_3 \\cdot Integrity_{\\{i,k,j\\}} + \\beta_4 \\cdot Gender_{\\{i,k,j\\}} + \\beta_5 \\cdot Age_{\\{i,k,j\\}} + \\beta_6 \\cdot Religion_{\\{i,k,j\\}} + e_{\\{i,k,j\\}} \\end{aligned}$$\n其中，i、k、j分别表示场景、模型和模拟索引。该方法不修改LLM模型，仅通过提示操纵变量，旨在揭示LLMs信任形成的机制。",
+    "experiment": "实验涉及五个场景和五个LLM模型，共43,200次模拟，每个场景重复12次以确保鲁棒性。数据集通过系统操纵可信度维度（高/低水平）和人口统计学变量（性别、年龄、宗教），使用t检验验证操纵有效性，OLS回归和相关分析评估信任预测。实验设置合理全面，覆盖组织、金融、社会等情境，预期LLMs信任类似于人类（受可信度影响），结果部分符合：高层管理者场景显示强相关（e.g., 完整性与信任相关系数最高，达0.77***），但其他场景异质性高，如捐赠请求场景中一些模型相关弱（≤0.20）。人口统计学偏差在金融场景显著（e.g., 犹太宗教增加信任），t检验显示所有场景可信度操纵有效（p < 0.001）。结果整体匹配预期，但模型间差异提示LLMs信任不一致，可能由于训练数据或架构差异。",
+    "one_sentence_summary": "本研究通过模拟实验首次揭示大型语言模型对人类的隐性信任模式，显示其类似于人类受可信度维度影响，但存在模型异质性和人口统计学偏差。",
+    "slug": "llm-trust-in-humans-biases",
+    "keywords": [
+        "LLM",
+        "Trust",
+        "AI",
+        "Large Language Models",
+        "Trustworthiness",
+        "Bias",
+        "Competence",
+        "Benevolence",
+        "Integrity"
+    ],
+    "further_thoughts": "本文的工作启发我们思考AI信任机制的更广泛应用，例如在AI伦理框架中整合信任评估以减少偏差，或与其他研究结合，如Wan et al. (2023)关于LLM性别偏差的研究，探讨信任偏差如何放大社会不平等；此外，可以扩展到多代理系统，研究AI间信任动态，类似于人类社会网络，潜在地提升AI在协作决策中的公平性和可靠性。",
+    "model": "grok-3-mini-latest",
+    "temperature": 0.5,
+    "top_p": 0.7,
+    "lang": "zh",
+    "id": "2504.15801",
+    "preference": "unknown",
+    "summary_time": "2025-05-04T08:29:20.144880+00:00",
+    "score": 0.5690779427610584,
+    "abstract": "As large language models (LLMs) and LLM-based agents increasingly interact with humans in decision-making contexts, understanding the trust dynamics between humans and AI agents becomes a central concern. While considerable literature studies how humans trust AI agents, it is much less understood how LLM-based agents develop effective trust in humans. LLM-based agents likely rely on some sort of implicit effective trust in trust-related contexts (e.g., evaluating individual loan applications) to assist and affect decision making. Using established behavioral theories, we develop an approach that studies whether LLMs trust depends on the three major trustworthiness dimensions: competence, benevolence and integrity of the human subject. We also study how demographic variables affect effective trust. Across 43,200 simulated experiments, for five popular language models, across five different scenarios we find that LLM trust development shows an overall similarity to human trust development. We find that in most, but not all cases, LLM trust is strongly predicted by trustworthiness, and in some cases also biased by age, religion and gender, especially in financial scenarios. This is particularly true for scenarios common in the literature and for newer models. While the overall patterns align with human-like mechanisms of effective trust formation, different models exhibit variation in how they estimate trust; in some cases, trustworthiness and demographic factors are weak predictors of effective trust. These findings call for a better understanding of AI-to-human trust dynamics and monitoring of biases and trust development patterns to prevent unintended and potentially harmful outcomes in trust-sensitive applications of AI.",
+    "categories": [
+        "cs.CL",
+        "cs.AI",
+        "cs.CY"
+    ],
+    "created": "2025-04-22",
+    "updated": "2025-04-23"
+}

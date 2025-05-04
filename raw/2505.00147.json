@@ -1,0 +1,40 @@
+{
+    "title": "AdaptMI: Adaptive Skill-based In-context Math Instruction for Small Language Models",
+    "authors": [
+        "Yinghui He",
+        "Abhishek Panigrahi",
+        "Yong Lin",
+        "Sanjeev Arora"
+    ],
+    "institution": [
+        "Princeton University"
+    ],
+    "problem_background": "本研究的出发点是解决小语言模型（SLMs）在in-context学习（ICL）中的性能差距问题。具体背景是，虽然基于技能的ICL策略（如利用大型语言模型的元认知能力来选择in-context示例）能显著提升大型模型的性能，但对SLMs的提升有限，甚至可能在简单问题上因引入不必要的信息导致性能下降，类似于人类的认知过载。该工作解决了SLMs在数学任务中ICL性能不佳的关键问题，特别是如何通过适应性策略避免过载并针对困难问题提供针对性指导，以提高整体问题解决能力。",
+    "method": "* **核心思想：** 受人类认知负荷理论和适应性教学启发，提出AdaptMI和AdaptMI+方法，通过自适应选择in-context示例，避免SLMs在简单问题上因信息过载而性能下降。\n* **如何实现：** 该方法分为两个阶段：\n  - **阶段1（检测简单和困难问题）：** 使用一个过程奖励模型（process reward model）对SLMs的响应进行评分，通过阈值过滤（如公式（1）所示）将问题分类为简单（easy）或困难（difficult）。公式（1）定义了基于最终步骤奖励、平均奖励和任意步骤低奖励的阈值函数R(q)。\n  - **阶段2（示例选择）：** 对于AdaptMI，在困难问题上使用技能-based k-shot示例，在简单问题上使用固定k-shot示例；对于AdaptMI+，进一步使用大型LLM（如GPT-4o-mini）识别SLMs响应中缺失的技能，并针对这些缺失技能选择in-context示例。\n* **主要步骤：** 首先，通过奖励模型检测问题难度；然后，根据难度和技能映射动态选择in-context示例，确保只在必要时引入技能指导。",
+    "experiment": "* **数据集和设置：** 使用MATH（7.5k训练样本，5k测试样本）和GSM8K（7.4k训练样本，1.3k测试样本）数据集，测试五种SLMs（Qwen2.5-1.5B、3B、7B和Llama-3.2-1B、3B），采用5-shot ICL，生成温度设置为0.0，并与一致性投票（consistency@5）方法比较。奖励模型使用RLHFlow/Llama3.1-8B-PRM-Mistral-Data，阈值τ₁=0.85、τ₂=0.7。\n* **为什么这样设计：** 实验旨在验证适应性策略的有效性，比较基线方法（固定、随机、技能-based示例），并分析为什么适应性方法优于非适应性技能-based方法。设置全面，覆盖多个模型大小和数据集子领域，以确保结果的鲁棒性和泛化性。\n* **结果：** 实验结果符合预期，AdaptMI+在MATH和GSM8K数据集上将SLMs准确率提高多达6%，AdaptMI提高多达3.6%。例如，在Qwen2.5-1.5B上，AdaptMI+平均准确率从53.0%提高到57.2%；迭代AdaptMI+实验显示性能持续改善，多达7.2%的增益。讨论部分通过案例研究和消融实验证实，技能-based示例在简单问题上可能导致过思（overthinking），而适应性方法能更好地平衡性能。",
+    "one_sentence_summary": "本文提出AdaptMI和AdaptMI+自适应方法，通过基于奖励模型检测问题难度并针对困难问题选择技能-based in-context示例，提高小语言模型在数学推理任务中的性能，同时避免认知过载。",
+    "slug": "adaptmi-adaptive-skill-based-in-context-math-instructions",
+    "keywords": [
+        "In-Context Learning",
+        "Small Language Models",
+        "Skill-Based Prompting",
+        "Cognitive Load Theory",
+        "Math Reasoning",
+        "Adaptive Teaching"
+    ],
+    "further_thoughts": "这项工作强调了适应性教学在AI中的潜力，不仅限于in-context学习，还可扩展到模型训练中，例如结合课程学习（curriculum learning）或知识蒸馏（knowledge distillation），以更有效地利用大型模型指导小型模型；此外，借鉴认知负荷理论，可能在其他领域如自然语言理解或代码生成中应用，优化提示策略；未来可探索将此方法与强化学习相结合，动态调整阈值或技能检测，以实现更智能的自适应系统，并与其他研究如元认知模型整合，探讨AI与人类学习机制的更深层联系。",
+    "model": "grok-3-mini-latest",
+    "temperature": 0.5,
+    "top_p": 0.7,
+    "lang": "zh",
+    "id": "2505.00147",
+    "preference": "unknown",
+    "summary_time": "2025-05-04T08:32:35.346556+00:00",
+    "score": 0.8085790563785483,
+    "abstract": "In-context learning (ICL) allows a language model to improve its problem-solving capability when provided with suitable information in context. Since the choice of in-context information can be determined based on the problem itself, in-context learning is analogous to human learning from teachers in a classroom. Recent works (Didolkar et al., 2024a; 2024b) show that ICL performance can be improved by leveraging a frontier large language model's (LLM) ability to predict required skills to solve a problem, popularly referred to as an LLM's metacognition, and using the recommended skills to construct necessary in-context examples. While this skill-based strategy boosts ICL performance in larger models, its gains on small language models (SLMs) have been minimal, highlighting a performance gap in ICL capabilities. We investigate this gap and show that skill-based prompting can hurt SLM performance on easy questions by introducing unnecessary information, akin to cognitive overload. To address this, we introduce AdaptMI, an adaptive approach to selecting skill-based in-context Math Instructions for SLMs. Inspired by cognitive load theory from human pedagogy, our method only introduces skill-based examples when the model performs poorly. We further propose AdaptMI+, which adds examples targeted to the specific skills missing from the model's responses. On 5-shot evaluations across popular math benchmarks and five SLMs (1B--7B; Qwen, Llama), AdaptMI+ improves accuracy by up to 6% over naive skill-based strategies.",
+    "categories": [
+        "cs.CL"
+    ],
+    "created": "2025-04-30",
+    "updated": "2025-05-02"
+}

@@ -1,0 +1,40 @@
+{
+    "title": "HYPEROFA: Expanding LLM Vocabulary to New Languages via Hypernetwork-Based Embedding Initialization",
+    "authors": [
+        "Enes Özeren",
+        "Yihong Liu",
+        "Hinrich Schütze"
+    ],
+    "institution": [
+        "LMU Munich",
+        "Munich Center for Machine Learning"
+    ],
+    "problem_background": "多语言预训练语言模型（PLMs）在中等和低资源语言上的性能 suboptimal，主要由于预训练数据中这些语言的暴露有限。一种常见策略是引入针对目标语言的新令牌，初始化它们的嵌入，并使用目标语言数据进行持续预训练。然而，嵌入初始化的方法至关重要，随机初始化无法利用现有嵌入中的知识，而OFA等方法虽基于相似性但受限于线性表达。本文提出HYPEROFA来解决这一问题，提供更具表达力的初始化策略。",
+    "method": "*核心思想:* 使用超网络学习从外部多语言词向量空间到PLM嵌入空间的映射，以初始化新令牌嵌入。\n*如何实现:* 包括三个步骤：\n1. 源嵌入因子分解，使用SVD分解嵌入矩阵。\n2. 匹配外部词向量，与令牌配对。\n3. 训练超网络（BiLSTM架构），使用损失函数：\n   - 对比损失：$$ \\mathcal{L}_{\\mathbf{c}} = \\mathbb{E}\\left[ -\\log \\frac{\\exp(\\text{sim}(\\mathbf{F}_i^s, \\hat{\\mathbf{F}}_i^s)/\\tau)}{\\exp(\\text{sim}(\\mathbf{F}_i^s, \\hat{\\mathbf{F}}_i^s)/\\tau) + \\text{NEG}} \\right] $$\n   - 标准化L1损失：$$ \\mathcal{L}_{\\mathrm{L1}} = \\mathbb{E}\\left[||\\boldsymbol{F}_i^s - \\hat{\\boldsymbol{F}}_i^s||_1\\right] $$\n   最终损失：$$ L(\\theta) = \\lambda \\cdot L_c + (1 - \\lambda) \\cdot L_{L1} $$\n新令牌初始化：复制重叠、用超网络预测、随机初始化剩余。",
+    "experiment": "*实验设置:* 在RoBERTa和XLM-R上扩展词汇，比较HYPEROFA、OFA和随机初始化。数据集包括句子检索（SR-T、SR-B）和序列标注（NER、POS），在22种语言上评估零样本跨语言性能。实验设计合理，覆盖不同资源水平语言，并评估初始化嵌入的质量和持续预训练后的效果。\n*结果:* 预持续预训练时，HYPEROFA优于随机初始化，与OFA相当；持续预训练后，表现良好，收敛更快，结果符合预期，表明方法改进明显，实验设置全面。",
+    "one_sentence_summary": "本文提出基于超网络的HYPEROFA方法，用于初始化新语言令牌嵌入，提高PLM对低资源语言的适应性，性能优于随机初始化并与OFA方法持平或更好。",
+    "slug": "hyperofa-embedding-initialization",
+    "keywords": [
+        "Hypernetwork",
+        "Embedding Initialization",
+        "Multilingual PLMs",
+        "Continual Pre-training",
+        "Cross-lingual Transfer"
+    ],
+    "further_thoughts": "HYPEROFA的方法突显了超网络在嵌入初始化中的灵活性，可能适用于其他任务如领域适应或跨模态学习。未来可以与最新的大型语言模型结合，或探索不同超网络架构以提高效率和泛化能力，并与其他初始化技术比较，以进一步提升在低资源场景下的表现。",
+    "model": "grok-3-mini-latest",
+    "temperature": 0.5,
+    "top_p": 0.7,
+    "lang": "zh",
+    "id": "2504.21018",
+    "preference": "unknown",
+    "summary_time": "2025-05-04T08:33:03.377385+00:00",
+    "score": 0.6291955916791697,
+    "abstract": "Many pre-trained language models (PLMs) exhibit suboptimal performance on mid- and low-resource languages, largely due to limited exposure to these languages during pre-training. A common strategy to address this is to introduce new tokens specific to the target languages, initialize their embeddings, and apply continual pre-training on target-language data. Among such methods, OFA (Liu et al., 2024a) proposes a similarity-based subword embedding initialization heuristic that is both effective and efficient. However, OFA restricts target-language token embeddings to be convex combinations of a fixed number of source-language embeddings, which may limit expressiveness. To overcome this limitation, we propose HYPEROFA, a hypernetwork-based approach for more adaptive token embedding initialization. The hypernetwork is trained to map from an external multilingual word vector space to the PLMs token embedding space using source-language tokens. Once trained, it can generate flexible embeddings for target-language tokens, serving as a good starting point for continual pretraining. Experiments demonstrate that HYPEROFA consistently outperforms random initialization baseline and matches or exceeds the performance of OFA in both continual pre-training convergence and downstream task performance. We make the code publicly available.",
+    "categories": [
+        "cs.CL",
+        "cs.LG"
+    ],
+    "created": "2025-04-21",
+    "updated": "2025-05-01"
+}

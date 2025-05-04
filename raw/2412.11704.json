@@ -1,0 +1,43 @@
+{
+    "title": "ElChat: Adapting Chat Language Models Using Only Target Unlabeled Language Data",
+    "authors": [
+        "Atsuki Yamaguchi",
+        "Terufumi Morishita",
+        "Aline Villavicencio",
+        "Nikolaos Aletras"
+    ],
+    "institution": [
+        "University of Sheffield",
+        "Hitachi, Ltd.",
+        "University of Exeter",
+        "The Alan Turing Institute"
+    ],
+    "problem_background": "词汇扩展（VE）是适应大型语言模型（LLMs）到目标语言的标准方法，但对于基于无标签数据训练的基础模型有效，而对于聊天模型（训练以遵循指令的模型）直接应用VE时，会导致聊天能力和指令遵循能力的遗忘。理想情况下需要目标语言的聊天数据来适应聊天模型，但这类数据往往不可用或创建成本高昂，手动翻译的替代方案也不总是有效。同时，现有方法如Chat Vector（CV）要求访问同系列的基础模型和聊天模型，但许多模型（如Phi系列或Velvet）不提供基础模型，这限制了其适用性。因此，本文旨在解决在仅有目标无标签数据的情况下，直接适应聊天模型的问题。",
+    "method": "ElChat的方法核心思想是通过注入源聊天模型的信息来在不牺牲目标语言性能的前提下恢复聊天能力和指令遵循能力。具体实现包括三个步骤：（1）对源聊天模型进行词汇扩展（VE），即添加新令牌并在目标无标签数据上进行持续预训练（CPT），以改进目标语言性能；（2）使用模型合并技术（如球面线性插值，SLERP），将源聊天模型和适应后的目标模型合并，以整合聊天能力和目标语言知识；（3）复制源模型中与聊天模板相关的特殊令牌（如<im_start>）的权重到目标模型中，以保持指令遵循功能。这些步骤不涉及额外训练，仅通过后处理操作实现。",
+    "experiment": "实验使用Qwen2.5 7B和Llama 3.1 8B两个聊天模型，在阿姆哈拉语、孟加拉语、缅甸语、古吉拉特语、僧伽罗语、泰米尔语和泰卢固语七种类型学多样语言上进行评估。数据集包括安全任务（TRUTHFULQA、TOXICGEN、IMPLICITHATE）、聊天和指令遵循任务（IFEVAL、GSM8K、MT-BENCH、MGSM）、目标语言任务（总结、机器翻译、多项选择分类）和源语言（英语）任务。实验设置旨在比较ElChat与基线方法（如CV、Chat+VE等）的性能，评估指标包括准确率、精确匹配率和chrF等。结果显示，ElChat在保持聊天模型准确率的同时，显著降低了指令遵循能力的遗忘，目标语言性能与CV相当或更 robust（如在MGSM任务上表现更好），安全性能竞争性强，且推理效率与适应后模型类似。这些结果符合预期，证明了ElChat的有效性和鲁棒性。",
+    "one_sentence_summary": "本文提出ElChat方法，通过直接在目标无标签数据上适应聊天模型，并结合模型合并和权重复制技术，成功恢复聊天能力和指令遵循，同时在目标语言性能和安全方面表现出色。",
+    "slug": "elchat-language-adaptation",
+    "keywords": [
+        "Chat Model",
+        "Vocabulary Expansion",
+        "Language Adaptation",
+        "Model Merging",
+        "Unlabeled Data"
+    ],
+    "further_thoughts": "ElChat的方法强调了模型合并在减少灾难性遗忘方面的潜力，这可以扩展到其他领域，如多模态模型的适应或跨任务迁移；未来可以探索更先进的合并技术（如TIES或DARE-TIES）来优化性能，尤其在低资源语言中；此外，结合主动学习或数据增强策略，可能进一步提升ElChat的泛化能力，并启发对非英语语言模型安全性和公平性的深入研究。",
+    "model": "grok-3-mini-latest",
+    "temperature": 0.5,
+    "top_p": 0.7,
+    "lang": "zh",
+    "id": "2412.11704",
+    "preference": "unknown",
+    "summary_time": "2025-05-04T08:28:00.472757+00:00",
+    "score": 0.7531363154660713,
+    "abstract": "Vocabulary expansion (VE) is the de-facto approach to language adaptation of large language models (LLMs) by adding new tokens and continuing pre-training on target data. While this is effective for base models trained on unlabeled data, it poses challenges for chat models trained to follow instructions through labeled conversation data. Directly adapting the latter with VE on target unlabeled data may result in forgetting chat abilities. While ideal, target chat data is often unavailable or costly to create for low-resource languages, and machine-translated alternatives are not always effective. To address this issue, previous work proposed using a base and chat model from the same family. This method first adapts the base LLM with VE on target unlabeled data and then converts it to a chat model by adding a chat vector (CV) derived from the weight difference between the source base and chat models. We propose ElChat, a new language adaptation method for chat LLMs that adapts a chat model directly on target unlabeled data, without a base model. It elicits chat abilities by injecting information from the source chat model. ElChat offers more robust and competitive target language and safety performance while achieving superior English, chat, and instruction-following abilities compared to CV.",
+    "categories": [
+        "cs.CL",
+        "cs.AI"
+    ],
+    "created": "2025-04-25",
+    "updated": "2025-04-28"
+}

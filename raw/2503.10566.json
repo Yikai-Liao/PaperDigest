@@ -1,0 +1,51 @@
+{
+    "title": "ASIDE: Architectural Separation of Instructions and Data in Language Models",
+    "authors": [
+        "Egor Zverev",
+        "Evgenii Kortukov",
+        "Alexander Panfilov",
+        "Alexandra Volkova",
+        "Soroush Tabesh",
+        "Sebastian Lapuschkin",
+        "Wojciech Samek",
+        "Christoph H. Lampert"
+    ],
+    "institution": [
+        "Institute of Science and Technology Austria (ISTA)",
+        "Fraunhofer Heinrich Hertz Institute, Berlin, Germany",
+        "ELLIS Institute Tübingen",
+        "Max Planck Institute for Intelligent Systems, Tübingen, Germany",
+        "Tübingen AI Center",
+        "Centre of eXplainable Artificial Intelligence, Dublin, Ireland",
+        "Technische Universität Berlin, Berlin, Germany",
+        "Berlin Institute for the Foundations of Learning and Data (BIFOLD), Berlin, Germany"
+    ],
+    "problem_background": "尽管大型语言模型（LLMs）表现出色，但它们缺乏基本的安全特性，这使得它们容易受到多种恶意攻击。先前研究将提示注入攻击的成功归因于指令和数据之间缺乏内在分离。本文的工作起点是解决这一问题，通过在嵌入级别强制指令和数据的分离，以减少模型对攻击的易感性。关键问题包括模型无法可靠地区分输入中的指令和数据部分，导致如间接提示注入和系统消息提取等攻击，影响了LLMs在安全关键任务中的应用。",
+    "method": "*核心思想:* ASIDE方法的核心是创建指令和数据标记在嵌入级别上的独立表示，以增强模型的安全性，而不引入额外的可训练参数。具体实现：修改模型的前向传递，根据标记的功能角色（指令或数据）选择嵌入。对于指令标记，使用标准的嵌入向量；对于数据标记，应用一个固定的正交旋转矩阵（如π/2的等斜旋转）到嵌入向量中。旋转矩阵定义为 $$ R_{\\rm iso}(\\theta) = \\text{diag}\\left( \\begin{pmatrix} \\cos \\theta & -\\sin \\theta \\\\ \\sin \\theta & \\cos \\theta \\end{pmatrix}, \\begin{pmatrix} \\cos \\theta & -\\sin \\theta \\\\ \\sin \\theta & \\cos \\theta \\end{pmatrix}, \\dots \\right) $$，其中θ通常取π/2。主要步骤包括：1. 在输入时标识每个标记的功能角色；2. 修改嵌入层的前向传递；3. 使用标准监督微调在标注了角色的数据集上训练模型。",
+    "experiment": "*实验设置:* 本文实验全面且合理，使用多种基准评估ASIDE方法，包括SEP数据集测量指令-数据分离分数（SEP分数），SEP Utility和AlpacaEval评估模型效用，以及TensorTrust、Gandalf、Purple、RuLES、BIPIA和Structured Query基准评估对提示注入的鲁棒性。实验在不同模型（如Llama 3.1、Llama 2、Qwen 2.5和Mistral系列）上进行，比较了ASIDE与Vanilla和ISE方法。数据集选择基于相关领域标准，SEP数据集用于量化分离，注入基准用于安全评估。实验设计旨在隔离架构修改的影响，而非特定安全训练。*结果:* ASIDE显著提高了分离分数（例如，SEP分数提高12.3至44.1个百分点），同时保持了相似的效用分数（如AlpacaEval分数变化不大），并降低了提示注入攻击的成功率（例如，在BIPIA和Structured Query基准中，攻击成功率显著下降）。这些结果符合预期，证明了ASIDE方法在提升分离和安全方面的有效性，而增加的计算开销最小。",
+    "one_sentence_summary": "本文提出ASIDE方法，通过在嵌入级别应用固定正交旋转实现大型语言模型的指令-数据架构分离，提高了模型的安全性和对提示注入攻击的鲁棒性，同时不牺牲性能。",
+    "slug": "aside-architectural-separation-instructions-data",
+    "keywords": [
+        "LLM",
+        "Instruction Data Separation",
+        "Embeddings",
+        "Orthogonal Rotation",
+        "Prompt Injection",
+        "Safety"
+    ],
+    "further_thoughts": "ASIDE方法通过简单的嵌入旋转提升了指令-数据分离，这启发我们是否可以将类似几何变换应用于其他AI安全领域，例如在视觉模型中分离敏感特征或在多模态模型中增强隐私保护。同时，与逆向提示注入训练或解释性AI方法结合，可能进一步优化鲁棒性。未来可以探索多层次指令层次结构的应用，或与其他防御框架整合，以构建更全面的AI安全系统。",
+    "model": "grok-3-mini-latest",
+    "temperature": 0.5,
+    "top_p": 0.7,
+    "lang": "zh",
+    "id": "2503.10566",
+    "preference": "unknown",
+    "summary_time": "2025-05-04T08:27:36.366751+00:00",
+    "score": 0.5333545333134228,
+    "abstract": "Despite their remarkable performance, large language models lack elementary safety features, and this makes them susceptible to numerous malicious attacks. In particular, previous work has identified the absence of an intrinsic separation between instructions and data as a root cause for the success of prompt injection attacks. In this work, we propose a method, ASIDE, that allows the model to clearly separate between instructions and data on the level of embeddings. ASIDE applies a fixed orthogonal rotation to the embeddings of data tokens, thus creating distinct representations of instructions and data tokens without introducing any additional parameters. We demonstrate the effectiveness of our method by instruct-tuning LLMs with ASIDE and showing (1) highly increased instruction-data separation scores without a loss in model capabilities and (2) competitive results on prompt injection benchmarks, even without dedicated safety training. Additionally, we study the working mechanism behind our method through an analysis of model representations.",
+    "categories": [
+        "cs.LG"
+    ],
+    "created": "2025-04-21",
+    "updated": "2025-04-22"
+}

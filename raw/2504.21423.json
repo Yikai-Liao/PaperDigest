@@ -1,0 +1,43 @@
+{
+    "title": "Diff-Prompt: Diffusion-Driven Prompt Generator with Mask Supervision",
+    "authors": [
+        "Weicai Yan",
+        "Wang Lin",
+        "Zirun Guo",
+        "Ye Wang",
+        "Fangming Feng",
+        "Xiaoda Yang",
+        "Zehan Wang",
+        "Tao Jin"
+    ],
+    "institution": [
+        "Zhejiang University"
+    ],
+    "problem_background": "提示学习在微调预训练多模态模型时显示出有前景的结果，但应用于更复杂和细粒度的任务时，性能提升有限。原因是现有方法通过损失反向传播直接优化提示生成过程中的参数，这限制了提示表示的丰富性和特异性。具体来说，现有的提示学习方法存在两个主要问题：一是不同模态的提示独立学习，无法建立模态间连接；二是只能学习全局提示，无法针对特定输入生成细粒度提示。这些问题在处理需要考虑模态间复杂关系的任务时（如指代表达理解）会导致性能提升有限，甚至不如基础模型。",
+    "method": "*   **核心思想：** 本文提出Diff-Prompt方法，使用扩散模型生成丰富且细粒度的提示信息，以提升预训练多模态模型在复杂下游任务上的性能。具体目标是通过掩码监督，生成能强调图像中特定部分的提示，帮助模型更好地融合多模态信息。\n*   **实现步骤：** 该方法分为三个阶段：\n    1. **Mask-VAE训练阶段：** 训练一个Mask-VAE模型，将掩码压缩到潜空间中，减少计算复杂度。给定掩码$m \\in \\mathbb{R}^{1\\times H\\times W}$，编码器$\\mathcal{E}$输出均值和方差向量，采样潜变量$z \\sim \\mathcal{N}(\\mu, \\sigma^2)$，解码器$\\mathcal{D}$重建掩码$\\tilde{m}$。损失函数为$\\mathcal{L}_{\\text{vae}} = \\|m - \\tilde{m}\\|_2^2 + \\lambda D_{\\text{KL}}(\\mathcal{N}(\\mu, \\sigma^2) \\|\\| \\mathcal{N}(0, \\mathbf{I}))$。\n    2. **提示生成阶段：** 使用改进的Diffusion Transformer (DiT)模型在潜空间中训练提示生成器$\\epsilon^\\theta$，以掩码为监督，条件为图像和标题。扩散过程通过添加噪声得到$z_t$，训练损失为$\\mathcal{L}_{\\theta} = \\|\\epsilon_{\\theta}(z_t, C) - \\epsilon_t\\|_2^2$，其中$C$包括图像嵌入、标题嵌入和时间步嵌入。采样使用DDIM加速，保留中间潜变量作为提示。\n    3. **提示微调阶段：** 冻结前两阶段模型，使用模态特定适配器(Adapter$^v$和Adapter$^l$)将生成提示语义对齐到预训练模型空间，并与少量可学习全局提示连接，输入到编码器中进行微调。最终输出通过下游头预测目标位置。",
+    "experiment": "*   **数据集和评估指标：** 本文在指代表达理解任务上进行实验，使用RefCOCO和Flickr30k数据集。评估指标包括Recall at K (R@K，表示模型在top K检索结果中正确识别目标的比例)和Upper Bound (UB，表示目标在所有预测结果中的比例)。具体选择了R@1、R@5和UB作为标准。\n*   **实验设置：** 以GLIP-T(A)作为基础模型，与多种参数高效微调方法（如适配器方法：Tip-adapter、CLIP-Adapter、Meta-adapter、MMA；提示调优方法：VPT、VFPT、CoOp、S-Prompts、MaPLe、FedTPG）进行比较。实验细节包括：Mask-VAE训练200个epoch，批量大小128，学习率0.05；提示生成器使用DDIM采样，Tsample=25；微调阶段学习率0.0001，使用AdamW优化器。删繁就简地控制了提示深度和长度，以平衡性能和计算开销。\n*   **结果分析：** Diff-Prompt在RefCOCO数据集上显著优于基线方法，例如在testA子集上R@1提升8.87%、R@5提升14.05%。在Flickr30k上也表现出色。结果符合预期，因为扩散模型生成的提示提供了输入特定的丰富信息，提升了模态融合。定性分析显示Diff-Prompt在位置敏感性、语言理解和物体识别上更强。消融实验证实了提示组件的有效性，提示深度增加时性能稳健提升。实验设置合理全面，涵盖了定量、定性、消融和泛化分析，验证了方法的鲁棒性和泛化能力。",
+    "one_sentence_summary": "本文提出Diff-Prompt方法，使用扩散模型基于掩码监督生成细粒度提示信息，显著提升预训练多模态模型在复杂指代表达理解任务上的性能，同时保持高效微调。",
+    "slug": "diff-prompt-diffusion-driven-prompt-generator-with-mask-supervision",
+    "keywords": [
+        "Diffusion Model",
+        "Prompt Learning",
+        "Multimodal",
+        "Fine-Tuning",
+        "Mask Supervision"
+    ],
+    "further_thoughts": "这项工作启发了使用生成模型增强提示学习的潜力，例如可以将扩散模型扩展到其他模态融合任务中，或结合控制Net-like方法实现更精确的条件生成；此外，提示生成器的多步退化过程可能启发更高效的一步生成模型，以减少计算开销；同时，与其他扩散模型相关研究（如DreamBooth）结合，可能提升零样本泛化能力，但需注意潜在过拟合风险和计算资源限制。",
+    "model": "grok-3-mini-latest",
+    "temperature": 0.5,
+    "top_p": 0.7,
+    "lang": "zh",
+    "id": "2504.21423",
+    "preference": "unknown",
+    "summary_time": "2025-05-04T08:32:03.586802+00:00",
+    "score": 0.5438955499904097,
+    "abstract": "Prompt learning has demonstrated promising results in fine-tuning pre-trained multimodal models. However, the performance improvement is limited when applied to more complex and fine-grained tasks. The reason is that most existing methods directly optimize the parameters involved in the prompt generation process through loss backpropagation, which constrains the richness and specificity of the prompt representations. In this paper, we propose Diffusion-Driven Prompt Generator (Diff-Prompt), aiming to use the diffusion model to generate rich and fine-grained prompt information for complex downstream tasks. Specifically, our approach consists of three stages. In the first stage, we train a Mask-VAE to compress the masks into latent space. In the second stage, we leverage an improved Diffusion Transformer (DiT) to train a prompt generator in the latent space, using the masks for supervision. In the third stage, we align the denoising process of the prompt generator with the pre-trained model in the semantic space, and use the generated prompts to fine-tune the model. We conduct experiments on a complex pixel-level downstream task, referring expression comprehension, and compare our method with various parameter-efficient fine-tuning approaches. Diff-Prompt achieves a maximum improvement of 8.87 in R@1 and 14.05 in R@5 compared to the foundation model and also outperforms other state-of-the-art methods across multiple metrics. The experimental results validate the effectiveness of our approach and highlight the potential of using generative models for prompt generation. Code is available at https://github.com/Kelvin-ywc/diff-prompt.",
+    "categories": [
+        "cs.CV"
+    ],
+    "created": "2025-04-30",
+    "updated": "2025-05-01"
+}

@@ -1,0 +1,48 @@
+{
+    "title": "Massive Values in Self-Attention Modules are the Key to Contextual Knowledge Understanding",
+    "authors": [
+        "Mingyu Jin",
+        "Kai Mei",
+        "Wujiang Xu",
+        "Mingjie Sun",
+        "Ruixiang Tang",
+        "Mengnan Du",
+        "Zirui Liu",
+        "Yongfeng Zhang"
+    ],
+    "institution": [
+        "Rutgers University",
+        "Carnegie Mellon University",
+        "New Jersey Institute of Technology",
+        "University of Minnesota"
+    ],
+    "problem_background": "大型语言模型（LLM）在各种应用中取得了显著成功，但对其内部机制的理解仍有限，特别是自注意力模块中查询（Q）和键（K）表示中的大规模值现象。这些大规模值在Q和K中集中出现，而在值（V）中不存在，现有研究主要关注其在量化中的作用，但未深入探讨其形成原因和功能。本文旨在解决这一空白，系统调查大规模值在上下文知识理解（从当前上下文窗口获取的知识）与参数知识检索（模型参数中存储的知识）中的作用，揭示其在LLM行为中的关键作用。",
+    "method": "* **核心思想：** 本文通过实验观察和分析自注意力模块中的大规模值，定义大规模值为满足特定L2范数阈值的元素，并探讨其功能和起源。核心方法包括破坏大规模值以测试其对模型性能的影响、比较不同量化策略的效果，以及追溯大规模值的成因。\n* **如何实现：** 首先，计算Q和K的L2范数以识别大规模值（公式：$M_{h,d} = \\|Q_{:,h,d}\\|_2 = \\sqrt{\\sum_{s=1}^{S} Q_{s,h,d}^2}$，并定义$M_{h,d} > \\lambda \\frac{1}{\\mathcal{D}} \\sum_{d'=1}^{\\mathcal{D}} M_{h,d'}$，其中$\\lambda = 5$）。然后，在预填充阶段破坏大规模值（替换为均值、零值等），并在推理过程中观察性能变化。同时，分析旋转位置编码（RoPE）的机制（公式：$\\theta_j = 10000^{-2j/d}$，旋转矩阵操作），证明大规模值源于RoPE的低频区域。\n* **主要步骤：** （1）观察大规模值的分布；（2）破坏实验测试其对上下文和参数知识任务的影响；（3）量化方法比较（如AWQ、SmoothQuant与GPTQ）；（4）因果和时间分析，追踪大规模值从第一层开始出现。",
+    "experiment": "* **数据集和设置：** 使用多种数据集，包括上下文知识理解任务（如GSM8K数学推理、AQUA-RAT、IMDB情感分析、合成密码检索任务）和参数知识检索任务（如Cities世界知识QA、合成体育、艺术、技术、名人数据集）。实验中破坏大规模值和非大规模值，观察性能变化；量化方法测试包括AWQ、SmoothQuant和GPTQ；因果分析涉及RoPE机制。\n* **为什么这样设计：** 破坏实验旨在隔离大规模值的贡献，量化实验验证其在实际应用中的重要性，因果分析揭示起源。设置合理，因为它覆盖了不同任务类型，并控制变量（如只在预填充阶段破坏值，以避免影响生成能力）。\n* **结果：** 破坏大规模值导致上下文任务性能急剧下降（如GSM8K准确率从81.30%降至15.10%，IMDB从94.70%降至1.80%），而参数任务影响较小（如Cities下降15-20%）。量化方法保护大规模值（如AWQ）更好地保留上下文能力。结果符合预期，证明大规模值对上下文知识理解至关重要。附加实验如困惑度和多样性指标进一步支持结论。",
+    "one_sentence_summary": "本文系统揭示了自注意力模块中大规模值在LLM上下文知识理解中的关键作用，并通过实验证明其源于旋转位置编码（RoPE），为模型优化和量化策略提供新洞见。",
+    "slug": "massive-values-self-attention-contextual-knowledge",
+    "keywords": [
+        "LLM",
+        "Self-Attention",
+        "Massive Values",
+        "Contextual Knowledge",
+        "Parametric Knowledge",
+        "RoPE",
+        "Quantization"
+    ],
+    "further_thoughts": "本文发现的大规模值现象不仅启发在量化策略中优先保护低频通道以维持上下文理解能力，还可能扩展到其他领域，如视觉Transformer模型中类似位置编码机制的优化；此外，与认知科学中人类记忆机制的类比值得探索，例如低频区域可能类似语义存储，而高频区域更关注位置信息，这或可指导开发更高效的混合模型；同时，结合NoPE（无位置编码）研究，未来可实验去除RoPE的影响，评估其在泛化能力上的权衡。",
+    "model": "grok-3-mini-latest",
+    "temperature": 0.5,
+    "top_p": 0.7,
+    "lang": "zh",
+    "id": "2502.01563",
+    "preference": "unknown",
+    "summary_time": "2025-05-04T08:27:00.873468+00:00",
+    "score": 0.8339264635217514,
+    "abstract": "Large language models (LLMs) have achieved remarkable success in contextual knowledge understanding. In this paper, we show that these concentrated massive values consistently emerge in specific regions of attention queries (Q) and keys (K) while not having such patterns in values (V) in various modern transformer-based LLMs (Q, K, and V mean the representations output by the query, key, and value layers respectively). Through extensive experiments, we further demonstrate that these massive values play a critical role in interpreting contextual knowledge (knowledge obtained from the current context window) rather than in retrieving parametric knowledge stored within the model's parameters. Our further investigation of quantization strategies reveals that ignoring these massive values leads to a pronounced drop in performance on tasks requiring rich contextual understanding, aligning with our analysis. Finally, we trace the emergence of concentrated massive values and find that such concentration is caused by Rotary Positional Encoding (RoPE), which has appeared since the first layers. These findings shed new light on how Q and K operate in LLMs and offer practical insights for model design and optimization. The Code is Available at https://github.com/MingyuJ666/Rope_with_LLM.",
+    "categories": [
+        "cs.CL"
+    ],
+    "created": "2025-04-28",
+    "updated": "2025-04-30"
+}

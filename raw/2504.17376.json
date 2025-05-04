@@ -1,0 +1,40 @@
+{
+    "title": "On-Device Qwen2.5: Efficient LLM Inference with Model Compression and Hardware Acceleration",
+    "authors": [
+        "Maoyang Xiang",
+        "Ramesh Fernando",
+        "Bo Wang"
+    ],
+    "institution": [
+        "Singapore University of Technology and Design"
+    ],
+    "problem_background": "Transformer-based Large Language Models (LLMs) 在 AI 能力上取得了重大进展，但部署到边缘设备时面临高计算需求、内存带宽限制和能耗挑战。论文的出发点是满足边缘设备上的实时响应需求和隐私保护需要，针对 Qwen2.5-0.5B 模型在 Xilinx Kria KV260 平台上的部署，解决的关键问题是内存容量和带宽限制（例如 Block RAMs 和 URAMs 的限制），以及矩阵乘法（Multiply-and-Accumulate 操作）作为性能瓶颈的问题，这些挑战导致模型参数加载效率低下和计算延迟增加。",
+    "method": "核心思想是通过软件硬件协同优化提升 LLM 推理效率。具体方法包括：\n- 软件优化：采用 Activation-aware Weight Quantization (AWQ) 模型压缩技术，设计自定义的 weight packing scheme，将量化权重、缩放因子和零值打包成 AWQ MACRO 块，提高内存带宽利用率；使用 Group Size (GS) 为 64 的分组机制，减少量化误差。\n- 硬件优化：利用 FPGA 的并行性和 Xilinx Kria KV260 的 ARM Cortex-A53 CPU 与可重构逻辑，设计加速器，包括 4 个 AXI 通道、unpacking unit 和 8×8 处理元素 (PE) 阵列，实现矩阵乘法的流水线执行和并行计算；加速器在 PL 侧进行权重解量化、MAC 操作，并在 PS 侧处理非线性操作，如 Rotary Positional Encoding 和 SiLU 激活函数。整体方法不依赖模型重新训练，仅通过推理阶段的优化来平衡准确性和性能。",
+    "experiment": "实验在 Xilinx Kria KV260 边缘平台上进行，使用 WNLI 基准测试数据集，评估指标包括准确率、模型大小和推理吞吐量（tokens/s）。实验设置全面合理，考虑了 accuracy 与 throughput 的权衡，baseline 为未优化的 Qwen2.5-0.5B 模型。结果显示：模型大小从 988 MB 减小到 443.81 MB，压缩率达 55.1%；推理速度从 2.8 tokens/s 提升到 5.1 tokens/s；准确率从 64.79% 略降到 61.97%，但综合 benchmark score （基于公式（1）计算）从 0.4 提高到 0.55，符合预期，证明了方法在保持较高准确性的同时显著提升了性能。公式（1）为：\n$$\\begin{aligned} Tot_{score} &= 0.4 \\times \\frac{Ratio_{accuracy}}{\\text{MAX}(Ratio_{accuracy})}\\ \n&+ 0.2 \\times \\frac{Ratio_{memory}}{\\text{MAX}(Ratio_{memory})}\\ \n&+ 0.2 \\times \\frac{Ratio_{throughput_P}}{\\text{MAX}(Ratio_{throughput_P})}\\ \n&+ 0.2 \\times \\frac{Ratio_{throughput_D}}{\\text{MAX}(Ratio_{throughput_D})} \\end{aligned} \\tag{1}$\n实验还通过 Table I 和 Table II 详细分析了延迟 breakdown 和资源利用率，确保结果的可靠性。",
+    "one_sentence_summary": "本文提出软件硬件协同优化框架，通过 AWQ 模型压缩和 FPGA 加速在边缘设备上高效部署 Qwen2.5-0.5B 模型，实现 55.1% 的压缩率和 5.1 tokens/s 的推理速度，同时保持较高准确性。",
+    "slug": "on-device-qwen2-5-efficient-llm-inference",
+    "keywords": [
+        "Large Language Models",
+        "Edge AI",
+        "FPGA",
+        "Acceleration",
+        "AWQ",
+        "Model Compression"
+    ],
+    "further_thoughts": "这项工作突显了 FPGA 在边缘 LLM 推理中的能量效率和可重构性潜力，未来可探索与其他硬件（如 GPU 或 ASIC）的混合部署，或结合更先进的量化技术（如混合精度量化）以进一步减少准确率损失；此外，考虑到相关研究（如 [16] 中 FPGA 空间加速器），可以扩展到更大模型或不同应用场景，如医疗或机器人领域，以提升泛化能力和实时性。",
+    "model": "grok-3-mini-latest",
+    "temperature": 0.5,
+    "top_p": 0.7,
+    "lang": "zh",
+    "id": "2504.17376",
+    "preference": "unknown",
+    "summary_time": "2025-05-04T08:29:05.706865+00:00",
+    "score": 0.5337962658156803,
+    "abstract": "Transformer-based Large Language Models (LLMs) have significantly advanced AI capabilities but pose considerable challenges for deployment on edge devices due to high computational demands, memory bandwidth constraints, and energy consumption. This paper addresses these challenges by presenting an efficient framework for deploying the Qwen2.5-0.5B model on the Xilinx Kria KV260 edge platform, a heterogeneous system integrating an ARM Cortex-A53 CPU with reconfigurable FPGA logic. Leveraging Activation-aware Weight Quantization (AWQ) with FPGA-accelerated execution pipelines, the proposed approach enhances both model compression rate and system throughput. Additionally, we propose a hybrid execution strategy that intelligently offloads compute-intensive operations to the FPGA while utilizing the CPU for lighter tasks, effectively balancing the computational workload and maximizing overall performance. Our framework achieves a model compression rate of 55.08% compared to the original model and produces output at a rate of 5.1 tokens per second, outperforming the baseline performance of 2.8 tokens per second.",
+    "categories": [
+        "cs.AR",
+        "cs.LG"
+    ],
+    "created": "2025-04-24",
+    "updated": "2025-04-25"
+}

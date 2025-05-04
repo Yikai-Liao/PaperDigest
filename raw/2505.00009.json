@@ -1,0 +1,39 @@
+{
+    "title": "Efficient Knowledge Transfer in Multi-Task Learning through Task-Adaptive Low-Rank Representation",
+    "authors": [
+        "Xiao Zhang",
+        "Kangsheng Wang",
+        "Tianyu Hu",
+        "Huimin Ma"
+    ],
+    "institution": [
+        "University of Science and Technology Beijing"
+    ],
+    "problem_background": "预训练语言模型（PLMs）在捕捉一般知识方面表现出色，但面对真实世界应用中的新任务时表现不佳，训练单独的模型成本高且无法有效利用跨任务知识。多任务学习（MTL）通过从源任务转移共享知识来提升对目标任务的泛化能力，而提示调优（PT）作为一种参数高效的细调方法，通过引入可学习的连续提示向量来编码任务特定知识，但由于其表示能力的限制，难以有效捕捉任务异质性（即任务间的差异），从而导致共享知识和任务特定知识混淆，阻碍了对未见任务的泛化。",
+    "method": "*   **核心思想：** TA-LoRA 基于提示调优，引入低秩表示来捕捉任务异质性，并通过快速-缓慢权重机制分离共享知识和任务特定知识，避免训练过程中知识混杂。\n*   **工作原理：** 对于多源任务集，TA-LoRA 将可适应提示向量分解为共享部分 $\\theta^0$ 和任务特定部分，使用低秩矩阵 $B$ 和 $A_i$ 近似任务特定知识，其中 $B$ 是共享的缓慢权重，$A_i$ 是任务特定的快速权重，并进一步将 $A_i$ 分解为秩-1 矩阵 $u_i \\otimes v_i$。训练时，$B$ 和 $A_i$ 采用不同的学习率以平衡梯度规模。同时，引入零初始化注意力机制，通过可学习门控因子 $g^l$ 控制注意力分数，避免早期训练阶段低秩矩阵干扰原始提示。具体步骤包括：(1) 初始化基模型提示；(2) 使用公式 $$\\theta = \\theta_0 + s \\bigoplus_{i=1}^{t} B_i A_i$$ 构建低秩表示；(3) 通过正则化损失 $$\\mathcal{L} = \\mathbb{E}_{(x, y) \\in \\mathcal{T}} \\left[ L_{\\text{PLM}} + \\lambda \\sum_{i=1}^{t} \\sum_{j \\neq i} \\|\\boldsymbol{\\mathcal{A}}_i^{\\top} \\boldsymbol{\\mathcal{A}}_j - \\boldsymbol{I}\\|^{2}_{2} \\right]$$ 优化参数，确保任务特定矩阵正交；(4) 在目标任务上微调任务特定部分。\n*   **主要步骤：** 先训练单源任务的基模型，然后在多任务设置下优化低秩表示，最后针对目标任务进行少样本泛化。",
+    "experiment": "*   **数据集和设置：** 使用 16 个 NLP 任务数据集，包括 8 个源任务（AFQMC、BAmazon、THUCNews 等）和 8 个目标任务（ChnSent、TNews 等），采用 Qwen2.5-7B 作为 backbone。实验包括未见数据和未见任务两种评估策略，涵盖全数据和少样本（k-shot）设置。未见数据评估模型捕捉异质性的能力，未见任务评估共享知识的泛化能力。\n*   **实验设计：** 比较 TA-LoRA 与基线方法（如 Full Fine-Tuning、Adapter、PT、SPoT 等）的性能，参数规模从 110K 到 7B 不等。Ablation 研究验证了快速-缓慢权重机制和零初始化注意力的重要性。\n*   **结果分析：** TA-LoRA 在未见数据和未见任务上均显著优于基线，平均性能提升 13.6% 和 11.4%，参数效率高（仅 1.3M 参数/任务）。少样本设置下，32-shot 性能已接近全数据水平。结果符合预期，证明了低秩表示和权重机制的有效性，Ablation 实验显示移除任一组件均导致性能下降，验证了设计合理性。",
+    "one_sentence_summary": "本文提出 TA-LoRA 方法，通过任务自适应低秩表示和快速-缓慢权重机制提升多任务学习的知识转移效率，实现对未见任务的优异泛化性能，同时保持高参数效率。",
+    "slug": "task-adaptive-low-rank-representation",
+    "keywords": [
+        "Multi-Task Learning",
+        "Prompt Tuning",
+        "Low-Rank Representation",
+        "Fast-Slow Weights",
+        "Parameter Efficiency"
+    ],
+    "further_thoughts": "这项工作展示了低秩表示在多任务学习中的潜力，可能扩展到其他领域如计算机视觉的多任务细调中，与 Adapter 方法结合可能进一步提升泛化能力；此外，结合参考 [14] 和 [15]，未来可以探索低秩结构与注意力机制的更深融合，以减少对初始化敏感性和提升跨模态任务的鲁棒性。",
+    "model": "grok-3-mini-latest",
+    "temperature": 0.5,
+    "top_p": 0.7,
+    "lang": "zh",
+    "id": "2505.00009",
+    "preference": "unknown",
+    "summary_time": "2025-05-04T08:32:05.313067+00:00",
+    "score": 0.8785111144271905,
+    "abstract": "Pre-trained language models (PLMs) demonstrate remarkable intelligence but struggle with emerging tasks unseen during training in real-world applications. Training separate models for each new task is usually impractical. Multi-task learning (MTL) addresses this challenge by transferring shared knowledge from source tasks to target tasks. As an dominant parameter-efficient fine-tuning method, prompt tuning (PT) enhances MTL by introducing an adaptable vector that captures task-specific knowledge, which acts as a prefix to the original prompt that preserves shared knowledge, while keeping PLM parameters frozen. However, PT struggles to effectively capture the heterogeneity of task-specific knowledge due to its limited representational capacity. To address this challenge, we propose Task-Adaptive Low-Rank Representation (TA-LoRA), an MTL method built on PT, employing the low-rank representation to model task heterogeneity and a fast-slow weights mechanism where the slow weight encodes shared knowledge, while the fast weight captures task-specific nuances, avoiding the mixing of shared and task-specific knowledge, caused by training low-rank representations from scratch. Moreover, a zero-initialized attention mechanism is introduced to minimize the disruption of immature low-rank components on original prompts during warm-up epochs. Experiments on 16 tasks demonstrate that TA-LoRA achieves state-of-the-art performance in full-data and few-shot settings while maintaining superior parameter efficiency.",
+    "categories": [
+        "cs.CL"
+    ],
+    "created": "2025-04-20",
+    "updated": "2025-05-02"
+}

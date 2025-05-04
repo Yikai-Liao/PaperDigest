@@ -1,0 +1,51 @@
+{
+    "title": "LServe: Efficient Long-sequence LLM Serving with Unified Sparse Attention",
+    "authors": [
+        "Shang Yang",
+        "Junxian Guo",
+        "Haotian Tang",
+        "Qinghao Hu",
+        "Guangxuan Xiao",
+        "Jiaming Tang",
+        "Yujun Lin",
+        "Zhijian Liu",
+        "Yao Lu",
+        "Song Han"
+    ],
+    "institution": [
+        "MIT",
+        "Shanghai Jiao Tong University",
+        "NVIDIA"
+    ],
+    "problem_background": "大型语言模型（LLMs）在处理长序列和复杂推理任务时表现出色，但高效服务这些模型面临重大挑战，主要由于注意力机制在预填充阶段的二次方计算复杂度和在解码阶段的大规模KV（键-值）缓存内存占用。现有方法要么专注于KV缓存量化以减少内存使用，但无法降低计算量，要么采用近似稀疏注意力来提高性能，却往往牺牲准确性或缺乏统一框架。本文的工作起点是解决这些问题，提供一个统一的方法来优化LLM服务的预填充和解码阶段效率，同时保持模型的长期上下文和推理能力。",
+    "method": "* **核心思想：** LServe 通过统一块稀疏注意力框架，结合静态和动态稀疏性，在不修改原始模型的情况下加速长序列LLM服务。具体实现是将注意力头分为静态稀疏（如流式头，仅关注局部和初始token）和动态稀疏（如基于查询的KV页面选择），通过块级跳过不重要token的计算来减少迭代次数。\n* **如何工作：** 在预填充阶段，采用静态稀疏模式，将部分注意力头转换为流式头；解码阶段引入动态稀疏，通过层次化分页和可重用页面选择动态剪枝KV页面。关键步骤包括：（1）离线配置稀疏模式，使用DuoAttention的优化方法确定注意力头的类型；（2）在GPU内核中融合稀疏计算，减少分支开销；（3）动态稀疏部分使用查询中心相似度计算重要性分数，例如通过公式 $$S^j = \\\\sum_{i}^{D} \\\\max\\\\left(q[i] \\\\ast k_{max}^j[i], \\\\ q[i] \\\\ast k_{min}^j[i]\\\\right)$$ 来估计逻辑页面的重要性，并选择高分物理页面；（4）可重用页面选择减少连续查询的计算开销。整个方法确保了硬件友好性和计算效率。",
+    "experiment": "* **实验设置：** 本文使用Llama-3-8B、Minitron-4B和Llama-2-7B模型，在序列长度高达512k的条件下进行基准测试，比较了vLLM、QServe、MInference和DuoAttention等基线系统。数据集包括LongBench（覆盖多任务benchmark如2WikiMQA、HotpotQA等）、Needle-in-a-Haystack（NIAH）、RULER（测试多跳追踪和聚合任务）和推理基准如AIME、MATH500。实验设计全面合理，考虑了不同GPU（如NVIDIA A100和L40S）、批量大小和序列长度的影响，量化了预填充和解码阶段的延迟。\n* **结果分析：** LServe在保持模型准确率的同时，平均加速预填充阶段高达2.9倍，解码阶段1.3-2.1倍，与基线系统相比表现出色。例如，在LongBench基准上，LServe的准确率与密集基线相当（平均下降不足1%），NIAH和RULER测试也显示了类似性能。结果符合预期，证明了静态和动态稀疏性的正交性以及与KV量化相结合的复合效应，实验开销合理，主要增加了页面选择等辅助计算，但通过优化（如可重用选择）得到有效控制。",
+    "one_sentence_summary": "本文提出LServe系统，通过统一块稀疏注意力机制结合静态和动态稀疏优化，显著提高了长序列LLM的预填充和解码效率，同时维持了模型的长期上下文和推理准确性。",
+    "slug": "lserve-sparse-attention",
+    "keywords": [
+        "LLM",
+        "Sparse Attention",
+        "Block Sparsity",
+        "KV Cache",
+        "Efficient Serving"
+    ],
+    "further_thoughts": "这项工作突显了稀疏注意力的潜力，不仅可以扩展到多模态模型（如视觉Transformer）中以减少计算需求，还可能与量化技术（如QServe中的W4A8KV4）深度整合，实现更低功耗的边缘设备部署；此外，动态稀疏策略的查询中心设计启发了对注意力机制的语义分析，可能应用于联邦学习场景中隐私保护的稀疏通信；然而，需注意在极端长序列下页面选择开销的潜在瓶颈，未来可探索自适应稀疏度或结合强化学习优化稀疏模式，以进一步提升泛化性和效率。",
+    "model": "grok-3-mini-latest",
+    "temperature": 0.5,
+    "top_p": 0.7,
+    "lang": "zh",
+    "id": "2502.14866",
+    "preference": "unknown",
+    "summary_time": "2025-05-04T08:26:52.160873+00:00",
+    "score": 0.8307071533882593,
+    "abstract": "Large language models (LLMs) have shown remarkable potential in processing long sequences and complex reasoning tasks, yet efficiently serving these models remains challenging due to the quadratic computational complexity of attention in the prefilling stage and the large memory footprint of the KV cache in the decoding stage. To address these issues, we introduce LServe, an efficient system that accelerates long-sequence LLM serving via hybrid sparse attention. This method unifies different hardware-friendly, structured sparsity patterns for both prefilling and decoding attention into a single framework, where computations on less important tokens are skipped block-wise. LServe demonstrates the compatibility of static and dynamic sparsity in long-context LLM attention. This design enables multiplicative speedups by combining these optimizations. Specifically, we convert half of the attention heads to nearly free streaming heads in both the prefilling and decoding stages. Additionally, we find that only a constant number of KV pages is required to preserve long-context and reasoning capabilities, irrespective of context length. We then design a hierarchical KV page selection policy that dynamically prunes KV pages based on query-centric similarity. On average, LServe accelerates LLM prefilling by up to 2.9x and decoding by 1.3-2.1x over vLLM, maintaining long-context accuracy. Code is released at https://github.com/mit-han-lab/omniserve.",
+    "categories": [
+        "cs.CL",
+        "cs.AI",
+        "cs.DC",
+        "cs.LG",
+        "cs.PF"
+    ],
+    "created": "2025-04-21",
+    "updated": "2025-04-22"
+}

@@ -1,0 +1,38 @@
+{
+    "title": "LLM Enhancer: Merged Approach using Vector Embedding for Reducing Large Language Model Hallucinations with External Knowledge",
+    "authors": [
+        "Naheed Rayhan",
+        "Md. Ashrafuzzaman"
+    ],
+    "institution": [
+        "Jagannath University"
+    ],
+    "problem_background": "大型语言模型（LLMs）如 ChatGPT 能够生成类似人类的自然响应，但其在真实世界关键场景中的应用受到限制，因为它们容易产生幻觉（即不准确的信息）、无法有效利用外部知识来源，并且依赖过时的训练数据。本研究的出发点是解决这些问题，减少幻觉，提高模型的准确性和可靠性。关键问题包括 LLMs 的记忆扭曲（memory distortion），这可能导致在关键任务中出现错误信息，并带来潜在风险；此外，针对自定义数据的微调成本高昂，亟需更经济有效的替代方法。",
+    "method": "方法的核心思想是通过 LLM-ENHANCER 系统整合多个在线数据来源（如 Google、Wikipedia 和 DuckDuckGo），使用代理工具并行获取信息，以减少 LLMs 的幻觉。具体实现包括：\n- 使用 ZeroShot React Agent 选择工具；\n- Action Executor 执行动作；\n- LangChain Tools 管理工具；\n- Merged Tools 将同质工具（如搜索引擎）合并，结合数据后使用 RecursiveCharacterTextSplitter 分割成块；\n- 将块存储在向量嵌入数据库（如 ChromaDB）中；\n- 通过向量嵌入检索最相关信息，并提供给开源 LLM（如 Mistral 7B）生成响应。主要步骤是并行数据获取、合并、分割、嵌入和检索，确保不需微调模型参数即可提升性能。",
+    "experiment": "实验使用了 WikiQA 数据集（预处理后包含 369 个唯一问题）和自定义 Dataset2023-24（包含 500 个 2023-2024 年的最新问题），目的是评估 LLM-ENHANCER 在减少幻觉方面的效果。实验设置包括比较不同模型（如 GPT-3.5 Turbo、Mistral 7B、顺序工具模型和 LLM-ENHANCER）的性能，使用指标如精确率、召回率、F1 分数和执行时间。为什么这样设计：WikiQA 用于测试旧数据表现，Dataset2023-24 用于验证新数据下的鲁棒性。结果显示，LLM-ENHANCER 在 WikiQA 上将 F1 分数从顺序模型的 0.58 提高到 0.77，在 Dataset2023-24 上从 0.82 提高到 0.85，表明方法改善明显且符合预期；执行时间稍长，但准确性提升值得。公式如下：\n$$Precision = \\frac{TP}{TP + FP} \\tag{1}$$\n$$Recall = \\frac{TP}{TP + FN} \\tag{2}$$\n$$F1-score = \\frac{2(\\text{Precision} \\times \\text{Recall})}{\\text{Precision} + \\text{Recall}} \\tag{3}$$\n实验设置全面合理，覆盖了不同数据集和指标。",
+    "one_sentence_summary": "本文提出 LLM-ENHANCER 系统，通过合并多个在线数据来源并使用向量嵌入减少大型语言模型的幻觉，提高响应准确性，同时保持自然性和经济性。",
+    "slug": "llm-enhancer-merged-approach",
+    "keywords": [
+        "LLM",
+        "Vector Embedding",
+        "Hallucinations",
+        "External Knowledge",
+        "Agent"
+    ],
+    "further_thoughts": "这个方法通过并行数据合并和向量嵌入提升了 LLMs 的外部知识整合效率，值得注意的是，它与 Baolin Peng 等人的 LLM-AUGMENTER 类似，但采用了开源模型和并行工具，这在资源受限的环境中更具优势；未来可以探索与其他模态（如图像或视频）的整合，或使用更先进的嵌入模型来进一步减少幻觉，并扩展到多语言或实时更新知识库的应用中，以增强泛化能力。",
+    "model": "grok-3-mini-latest",
+    "temperature": 0.5,
+    "top_p": 0.7,
+    "lang": "zh",
+    "id": "2504.21132",
+    "preference": "unknown",
+    "summary_time": "2025-05-04T08:31:34.204190+00:00",
+    "score": 0.5119629253439203,
+    "abstract": "Large Language Models (LLMs), such as ChatGPT, have demonstrated the capability to generate human like, natural responses across a range of tasks, including task oriented dialogue and question answering. However, their application in real world, critical scenarios is often hindered by a tendency to produce inaccurate information and a limited ability to leverage external knowledge sources. This paper introduces the LLM ENHANCER system, designed to integrate multiple online sources such as Google, Wikipedia, and DuckDuckGo to enhance data accuracy. The LLMs employed within this system are open source. The data acquisition process for the LLM ENHANCER system operates in parallel, utilizing custom agent tools to manage the flow of information. Vector embeddings are used to identify the most pertinent information, which is subsequently supplied to the LLM for user interaction. The LLM ENHANCER system mitigates hallucinations in chat based LLMs while preserving response naturalness and accuracy.",
+    "categories": [
+        "cs.CL",
+        "cs.LG"
+    ],
+    "created": "2025-04-29",
+    "updated": "2025-05-01"
+}

@@ -1,0 +1,38 @@
+{
+    "title": "Communication-Efficient Wireless Federated Fine-Tuning for Large-Scale AI Models",
+    "authors": [
+        "Bumjun Kim",
+        "Wan Choi"
+    ],
+    "institution": [
+        "Seoul National University"
+    ],
+    "problem_background": "Transformer-based large language models (LLMs) 在各种任务中取得了显著成功，但在其联邦学习 (FL) 场景下进行微调面临资源限制和通信开销的重大挑战。Low-Rank Adaptation (LoRA) 通过训练紧凑的低秩矩阵来缓解这些问题，但现有方法缺乏系统化的秩选择和高效的稀疏化策略。本文的工作起点是优化无线联邦LoRA微调的学习性能和通信效率，解决了关键问题，包括LoRA秩的选择、避免昂贵矩阵乘法和奇异值分解 (SVD) 的稀疏化方法，以及在延迟约束下动态调整参数的问题，从而平衡模型性能与资源消耗。",
+    "method": "*   **核心思想:** 本文提出Sparsified Orthogonal Fine-Tuning (SOFT) 和Two Stage Federated Algorithm (TSFA) 来优化LoRA在无线联邦学习中的应用。SOFT通过强制LoRA矩阵正交来简化稀疏化过程，而TSFA将优化分为离线和在线两个阶段。\n*   **工作原理:** SOFT在损失函数中添加正交正则化项（例如，$L_k = L_{\\text{task},k} + \\zeta (\\|\\boldsymbol{\\theta}_{B,k}^{\\mathsf{T}} \\boldsymbol{\\theta}_{B,k} - \\operatorname{diag}(\\boldsymbol{\\theta}_{B,k}^{\\mathsf{T}} \\boldsymbol{\\theta}_{B,k})\\|_F^2 + \\|\\boldsymbol{\\theta}_{A,k} \\boldsymbol{\\theta}_{A,k}^{\\mathsf{T}} - \\operatorname{diag}(\\boldsymbol{\\theta}_{A,k} \\boldsymbol{\\theta}_{A,k}^{\\mathsf{T}})\\|_F^2)$），使矩阵行为类似于SVD的奇异矩阵，从而通过计算向量范数估计奇异值并选择重要更新。TSFA的离线阶段使用收敛分析预先确定LoRA秩r，在线阶段采用Lyapunov优化动态调整稀疏化比率和带宽分配。还引入错误反馈机制来减轻稀疏化误差的影响。\n*   **主要步骤:** 1. 离线优化LoRA秩；2. 在线调整参数；3. 客户端使用SOFT进行本地训练和稀疏化；4. 服务器聚合更新。",
+    "experiment": "*   **数据集和设置:** 本文在CIFAR-100数据集上使用Vision Transformer Base (ViT-Base) 模型进行实验，模拟无线通信环境，包括Rayleigh衰落信道和非独立同分布 (non-IID) 数据分区。实验比较了SOFT与基线方法（如TLoRA、RLoRA、SLoRA和ILoRA），并评估了TSFA与单阶段变体的性能。设置考虑了通信延迟约束、带宽分配和稀疏化比率，旨在验证方法的通信效率和学习性能。\n*   **结果分析:** SOFT在稀疏化比率下保持较高准确率，证明了其在捕获重要更新方面的有效性；TSFA通过预优化LoRA秩和动态调整参数，实现了更好的性能-通信权衡，实验结果符合预期，显示通信开销显著减少，同时准确率与理想方法相当。协方差效应的实证验证了非IID数据的影响，实验设计全面合理，突出了方法改进的明显优势。",
+    "one_sentence_summary": "本文提出了一种无线联邦LoRA微调框架，通过Sparsified Orthogonal Fine-Tuning (SOFT) 和Two Stage Federated Algorithm (TSFA) 优化参数稀疏化和动态资源分配，提高了通信效率和学习性能。",
+    "slug": "communication-efficient-wireless-federated-lora-fine-tuning",
+    "keywords": [
+        "Federated Learning",
+        "LoRA",
+        "Sparsification",
+        "Wireless Communication",
+        "Convergence Analysis"
+    ],
+    "further_thoughts": "论文中Lyapunov优化用于处理延迟约束，这可能启发其他分布式系统如边缘计算中的资源管理；协方差效应在非IID数据下的分析提示未来可探索数据增强或个性化联邦学习来减轻异质性影响；此外，将该框架与差分隐私结合可能提升FL的安全性，并与其他参数高效微调方法（如Prompt Tuning）整合，以进一步提高泛化能力。",
+    "model": "grok-3-mini-latest",
+    "temperature": 0.5,
+    "top_p": 0.7,
+    "lang": "zh",
+    "id": "2505.00333",
+    "preference": "unknown",
+    "summary_time": "2025-05-04T08:33:46.183513+00:00",
+    "score": 0.7350944984017936,
+    "abstract": "Transformer-based large language models (LLMs) have achieved remarkable success across various tasks. Yet, fine-tuning such massive models in federated learning (FL) settings poses significant challenges due to resource constraints and communication overhead. Low-Rank Adaptation (LoRA) addresses these issues by training compact, low-rank matrices instead of fully fine-tuning large models. This paper introduces a wireless federated LoRA fine-tuning framework that optimizes both learning performance and communication efficiency. We provide a novel convergence analysis, revealing how LoRA rank and covariance effects influence FL training dynamics. Leveraging these insights, we propose Sparsified Orthogonal Fine-Tuning (\\textbf{SOFT}), an adaptive sparsification method that streamlines parameter updates without expensive matrix multiplications and singular value decomposition (SVD) operations. Additionally, we present a Two Stage Federated Algorithm (\\textbf{TSFA}) algorithm that pre-determines key parameters offline and dynamically adjusts bandwidth and sparsification online, ensuring efficient training under latency constraints. Experiments on benchmark datasets show that our approach achieves accuracy comparable to ideal scenario models while significantly reducing communication overhead. Our framework thus enables scalable, resource-efficient deployment of large models in real-world wireless FL scenarios.",
+    "categories": [
+        "cs.LG",
+        "eess.SP"
+    ],
+    "created": "2025-05-01",
+    "updated": "2025-05-02"
+}

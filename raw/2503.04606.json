@@ -1,0 +1,46 @@
+{
+    "title": "The Best of Both Worlds: Integrating Language Models and Diffusion Models for Video Generation",
+    "authors": [
+        "Aoxiong Yin",
+        "Kai Shen",
+        "Yichong Leng",
+        "Xu Tan",
+        "Xinyu Zhou",
+        "Juncheng Li",
+        "Siliang Tang"
+    ],
+    "institution": [
+        "Zhejiang University",
+        "Moonshot AI"
+    ],
+    "problem_background": "文本到视频（T2V）生成领域最近取得了显著进展，但主要依赖两种范式：自回归语言模型和扩散模型。每种范式都有其固有局限性：语言模型在视觉质量和错误积累方面表现较差，而扩散模型缺乏语义理解和因果建模能力。本工作的出发点是整合两种范式的优势，解决这些问题。具体来说，语言模型基于离散标记化，能够明确编码高层语义并确保叙事连贯性，但由于信息压缩导致视觉保真度较低；扩散模型使用连续潜在表示来保留更多感知细节，从而实现高重建质量，但缺乏语义可解释性和因果约束，可能导致时间不一致或语义幻觉。此外，语言模型的自回归建模强化了因果依赖性，但容易出现错误传播，而扩散模型的非自回归生成减少了错误积累，但缺少显式因果约束。",
+    "method": "* **核心思想：** LanDiff 是一个混合框架，通过粗到细的生成范式结合语言模型和扩散模型的优势。具体实现为两阶段生成过程：第一阶段使用语言模型生成高层语义标记，第二阶段使用扩散模型细化这些语义以产生高保真视频。\n* **关键组件：** (1) 语义标记化器：将 3D 视觉特征压缩成紧凑的 1D 离散表示，采用 Theia 模型提取语义丰富的特征，并通过查询-based 因果标记化和视频帧分组（受 MP4 启发）减少空间和时间冗余，实现约 14,000 倍的压缩比；(2) 语言模型：基于文本生成语义标记，使用类似 LLaMA 的结构，自回归建模语义序列，并引入控制条件如帧数和运动分数；(3) 流式扩散模型：以语义标记为条件，通过块-wise 流式策略逐步去除噪声生成感知特征，支持长视频生成。\n* **主要步骤：** 首先，提取文本嵌入和视频语义特征；然后，语言模型生成离散语义标记；接着，扩散模型以这些标记为条件细化生成视频潜在特征；最后，使用 VAE 解码器转换为 RGB 视频。公式包括标记化过程：$Z_Q = \\text{Enc}([F; Q])$ 和重建过程：$\\hat{F} = \\text{Dec}([M; \\hat{Z}_Q])$，损失函数为 $\\mathcal{L} = \\lambda_{\\text{rec}} \\|\\hat{F} - F\\|_2 + \\lambda_{\\text{commit}} \\|\\text{sg}(\\hat{Z}_Q) - Z_Q\\|_2$。",
+    "experiment": "* **数据集和设置：** 使用内部数据集训练：语义标记化和语言模型使用 200M 视频-文本对，视频时长小于 6 秒，缩放至约 480x720 分辨率，帧率设为 8；扩散模型使用 3M 高质量视频-文本对。实验在 VBench T2V 基准上评估，包括短视频和长视频生成。基线模型包括 Sora、Kling、Hunyuan Video 等。\n* **实验设计：** 比较 LanDiff 与其他模型在多个指标上的性能，如总分、质量分、语义分。消融实验验证了语义标记化和无分类器引导的影响。推理使用流式策略，支持长视频生成。\n* **结果和分析：** LanDiff 5B 模型在 VBench 上得分 85.43，超过开源模型 Hunyuan Video (13B) 和商业模型如 Sora。长视频生成也达到最先进水平。在定性比较中，LanDiff 更好地捕捉语义一致性和动态变化，例如鱼类实体保持完整和冰雕融化过程。结果符合预期，证明了混合框架的优势：与相同数据和大小的扩散模型相比，LanDiff 在质量和语义上均有显著提升，实验设置全面合理。",
+    "one_sentence_summary": "本文提出 LanDiff 框架，通过整合语言模型和扩散模型的优点，实现高效的文本到视频生成，显著提升了视频的语义一致性和视觉质量。",
+    "slug": "best-of-both-worlds-landiff",
+    "keywords": [
+        "Text-to-Video",
+        "Language Model",
+        "Diffusion Model",
+        "Semantic Tokenization",
+        "Video Generation"
+    ],
+    "further_thoughts": "这项工作展示了混合模型在多模态生成中的潜力，例如可以将类似方法扩展到音频或 3D 生成任务中，通过分层处理高层语义和低层细节来提高效率；此外，语义标记化的压缩策略可能启发其他领域如长序列处理或高效压缩，未来可以探索与更先进的基础模型结合，以进一步提升泛化能力和可控性。",
+    "model": "grok-3-mini-latest",
+    "temperature": 0.5,
+    "top_p": 0.7,
+    "lang": "zh",
+    "id": "2503.04606",
+    "preference": "unknown",
+    "summary_time": "2025-05-04T08:27:11.936100+00:00",
+    "score": 0.5812358273589316,
+    "abstract": "Recent advancements in text-to-video (T2V) generation have been driven by two competing paradigms: autoregressive language models and diffusion models. However, each paradigm has intrinsic limitations: language models struggle with visual quality and error accumulation, while diffusion models lack semantic understanding and causal modeling. In this work, we propose LanDiff, a hybrid framework that synergizes the strengths of both paradigms through coarse-to-fine generation. Our architecture introduces three key innovations: (1) a semantic tokenizer that compresses 3D visual features into compact 1D discrete representations through efficient semantic compression, achieving a $\\sim$14,000$\\times$ compression ratio; (2) a language model that generates semantic tokens with high-level semantic relationships; (3) a streaming diffusion model that refines coarse semantics into high-fidelity videos. Experiments show that LanDiff, a 5B model, achieves a score of 85.43 on the VBench T2V benchmark, surpassing the state-of-the-art open-source models Hunyuan Video (13B) and other commercial models such as Sora, Kling, and Hailuo. Furthermore, our model also achieves state-of-the-art performance in long video generation, surpassing other open-source models in this field. Our demo can be viewed at https://landiff.github.io/.",
+    "categories": [
+        "cs.CV",
+        "cs.AI",
+        "cs.CL",
+        "cs.LG"
+    ],
+    "created": "2025-04-29",
+    "updated": "2025-04-30"
+}

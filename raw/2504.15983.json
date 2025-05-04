@@ -1,0 +1,37 @@
+{
+    "title": "W-PCA Based Gradient-Free Proxy for Efficient Search of Lightweight Language Models",
+    "authors": [
+        "Shang Wang"
+    ],
+    "institution": [
+        "上海科技大学"
+    ],
+    "problem_background": "大型语言模型在各种领域表现出色，但其规模和计算需求在资源受限的环境中（如移动设备和边缘计算）构成挑战，因此需要探索轻量级语言模型。现有方法主要依赖手动设计或基于训练的神经架构搜索（NAS），而零-shot NAS方法虽能避免训练，但面临评估指标偏差和计算效率低的问题。本文的工作起点是针对这些挑战，提出一种新型零-shot NAS方法，解决偏置评估指标和计算低效的关键问题，从而提高轻量级语言模型的设计和评估效率。",
+    "method": "* **核心思想：** 提出权重加权主成分分析（W-PCA）作为零-shot NAS的代理，旨在通过结合模型参数数量和主成分分析（PCA）值，评估轻量级语言模型的性能，而不需进行训练。\n* **实现方式：** W-PCA 计算过程包括：首先，对前馈神经网络（FFN）层的隐藏状态进行PCA分析，计算累计贡献率超过阈值η的 principal component 维度；然后，将该维度值乘以模型参数数量。数学公式为：\n  $$ \\text{W-PCA}(\\mathbf{X}) = w \\times S(\\mathbf{X}) $$\n  其中，$ S(\\mathbf{X}) = \\sum_{f=1}^{m} \\text{PCA\\_dim}(\\mathbf{X}, \\eta) $，$ m $ 是层数，$ \\text{PCA\\_dim} $ 通过特征值分解 covariance matrix 计算得到。具体步骤：\n  1. 对输入 minibatch 计算 FFN 层的隐藏状态。\n  2. 居中数据并计算协方差矩阵。\n  3. 进行特征值分解，确定最小 k 使得累计方差贡献率 ≥ η。\n  4. 跨所有层求和，并乘以参数数量 w。\n* **主要优势：** 该方法是梯度自由的，仅需前向传播，计算高效，且能捕获模型参数与信息含量之间的关系。",
+    "experiment": "* **数据集和设置：** 本文在 FlexiBERT 搜索空间上进行排名相关性实验，使用 GLUE 分数作为 ground truth，比较不同零-shot 代理的 Kendall τ 和 Spearman ρ 相关系数。同时，在 GLUE 和 SQuAD 数据集上进行准确性比较，实验设置包括使用遗传算法搜索最优结构，η 设置为 0.99，模型参数上限控制在 10M 和 15.6M 等。搜索过程采用遗传算法，种群大小 50，世代数 40。\n* **结果分析：** 在排名相关性实验中，W-PCA 的 τ 和 ρ 值均优于其他零-shot 方法（如 Synaptic Diversity、Head Confidence），τ 提高了 0.220，ρ 提高了 0.334。准确性实验显示，W-PCA 在 GLUE 测试集上平均分数比 baseline 高 0.3，搜索效率提高百倍；在 SQuAD 上，EM 和 F1 分数均优于 TinyBERT 和 EfficientBERT。实验结果符合预期，证明 W-PCA 显著提升了性能和效率，实验设计全面合理，包括消融实验验证各组件贡献，以及扩展到因果语言建模任务。\n* **为什么这样设计：** 实验覆盖了排名相关性和实际性能评估，确保代理的有效性和泛化能力；通过与多种 baseline 比较，突出了 W-PCA 的优势。",
+    "one_sentence_summary": "本文提出 W-PCA 方法，通过结合参数数量和主成分分析，提供一种高效的零-shot NAS 代理，用于轻量级语言模型的搜索，显著提高了搜索效率和模型性能。",
+    "slug": "w-pca-gradient-free-proxy-lightweight-lm",
+    "keywords": [
+        "W-PCA",
+        "Zero-Shot NAS",
+        "Lightweight Language Models",
+        "PCA",
+        "Gradient-Free Proxy"
+    ],
+    "further_thoughts": "W-PCA 方法强调了在不依赖训练的情况下评估模型架构的重要性，这可以扩展到其他领域，如视觉 Transformer 或生成式大语言模型（LLM），例如结合模型剪枝技术进一步优化资源利用。未来可以探索不同η值的自适应选择或与其他代理的融合，以提升鲁棒性；此外，考虑到 AI 的环境影响，W-PCA 的高效性有助于减少碳排放，推动可持续 AI 发展。同时，论文中提到的 CLM 任务扩展表明，该方法可能适用于更广泛的序列建模任务，值得进一步研究其在多模态模型中的潜力。",
+    "model": "grok-3-mini-latest",
+    "temperature": 0.5,
+    "top_p": 0.7,
+    "lang": "zh",
+    "id": "2504.15983",
+    "preference": "unknown",
+    "summary_time": "2025-05-04T08:30:05.507262+00:00",
+    "score": 0.5384739291273293,
+    "abstract": "The demand for efficient natural language processing (NLP) systems has led to the development of lightweight language models. Previous work in this area has primarily focused on manual design or training-based neural architecture search (NAS) methods. Recently, zero-shot NAS methods have been proposed for evaluating language models without the need for training. However, prevailing approaches to zero-shot NAS often face challenges such as biased evaluation metrics and computational inefficiencies. In this paper, we introduce weight-weighted PCA (W-PCA), a novel zero-shot NAS method specifically tailored for lightweight language models. Our approach utilizes two evaluation proxies: the parameter count and the number of principal components with cumulative contribution exceeding $η$ in the feed-forward neural (FFN) layer. Additionally, by eliminating the need for gradient computations, we optimize the evaluation time, thus enhancing the efficiency of designing and evaluating lightweight language models. We conduct a comparative analysis on the GLUE and SQuAD datasets to evaluate our approach. The results demonstrate that our method significantly reduces training time compared to one-shot NAS methods and achieves higher scores in the testing phase compared to previous state-of-the-art training-based methods. Furthermore, we perform ranking evaluations on a dataset sampled from the FlexiBERT search space. Our approach exhibits superior ranking correlation and further reduces solving time compared to other zero-shot NAS methods that require gradient computation.",
+    "categories": [
+        "cs.CL",
+        "cs.AI"
+    ],
+    "created": "2025-04-22",
+    "updated": "2025-04-23"
+}

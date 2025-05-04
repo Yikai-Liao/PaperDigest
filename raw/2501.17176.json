@@ -1,0 +1,41 @@
+{
+    "title": "Prompt-Based Cost-Effective Evaluation and Operation of ChatGPT as a Computer Programming Teaching Assistant",
+    "authors": [
+        "Marc Ballestero-Ribó",
+        "Daniel Ortiz-Martínez"
+    ],
+    "institution": [
+        "Universitat de Barcelona"
+    ],
+    "problem_background": "本研究的出发点是实现1:1的学生教师比例，以提供个性化教育和及时反馈，但由于资源限制（如教师短缺和预算问题），这一目标难以实现。特别是在计算机工程学入门编程课程中，学生数量众多，教师无法提供24/7的帮助，学生在独立作业时可能遇到困难。大型语言模型（LLMs）如ChatGPT的出现为虚拟教学助理提供了可能，但存在挑战：ChatGPT作为通用模型可能生成不准确信息、难以适应特定课程需求，且手动评估其性能成本高昂。本文解决了关键问题，包括评估ChatGPT在提供编程反馈方面的性能、提出成本效益高的自动评估方法（如通过结构化提示减少手动评估需求）、以及探讨LLMs在实际教育场景中的操作策略，以降低知识产权风险和提升教学效果。",
+    "method": "本研究的核心方法是设计一个基于提示的框架，使用In-Context Learning (ICL) 和Chain of Thought (CoT) 技术来构建提示模板。具体步骤包括：首先，在提示中指定函数名称、描述和一组单元测试；其次，提供示例输入-输出对，包括学生代码实现和结构化的反馈（使用Markdown格式分节，如\"Brief Code Explanation\"、\"Main Issues\"和\"Corrected Version\"）；第三，通过CoT方法在反馈中包含推理步骤和正确性判断；最后，实例化提示以分析学生代码，实现反馈的自动化提取和分析。核心思想是通过强制LLM生成结构化输出，便于程序化处理，而不修改模型本身，仅在推理阶段调整采样。",
+    "experiment": "实验评估了GPT-3.5T和GPT-4T在五个Python编程问题（Rotated Palindromes、Run Length Encoding、Number of Ones、In-place Partition、Sum of Pairs）上的性能，使用真实学生代码作为数据集（共500多个提交，包括运行时错误和断言测试）。实验设置包括：自动运行单元测试获取 ground truth，提取LLM反馈中的正确性预测、问题列表和修正版本，并计算指标如准确率、敏感性和特异性；用户研究涉及11名学生评估反馈的正确性和有用性。结果显示GPT-4T在代码正确性判断和问题识别上优于GPT-3.5T（准确率最高86.4%），但仍存在生成无关或错误反馈的问题；自动措施提供了错误反馈率的下界，节省了手动评估成本。实验设置合理全面，覆盖了多个研究问题，结果与预期一致，表明结构化提示显著提高了评估效率。",
+    "one_sentence_summary": "本文通过设计基于ICL和CoT的提示模板，实现了ChatGPT在编程教育中的成本效益评估和操作，显著降低了手动评估需求并提升了反馈的结构化分析。",
+    "slug": "prompt-based-evaluation-chatgpt-teaching-assistant",
+    "keywords": [
+        "LLM",
+        "ChatGPT",
+        "Prompt Engineering",
+        "In-Context Learning",
+        "Code Feedback",
+        "Automatic Evaluation",
+        "Programming Education"
+    ],
+    "further_thoughts": "本研究中提示工程的创新性值得关注，它不仅适用于编程教育，还可扩展到其他领域如医学或法律的AI辅助教学中，通过类似结构化输出减少人为错误；此外，与机器翻译中的质量估计技术结合，可能开发出更先进的反馈质量预测器，例如使用代码嵌入或句子嵌入训练模型来预估反馈准确性；未来，随着LLM模型的迭代（如Llama系列），可以探索细调模型以减少幻觉问题，或整合多模态输入提升交互性，但需注意伦理问题，如学生对AI反馈的过度信任可能影响批判性思维。",
+    "model": "grok-3-mini-latest",
+    "temperature": 0.5,
+    "top_p": 0.7,
+    "lang": "zh",
+    "id": "2501.17176",
+    "preference": "unknown",
+    "summary_time": "2025-05-04T08:26:25.137287+00:00",
+    "score": 0.6650109866054471,
+    "abstract": "The dream of achieving a student-teacher ratio of 1:1 is closer than ever thanks to the emergence of large language models (LLMs). One potential application of these models in the educational field would be to provide feedback to students in university introductory programming courses, so that a student struggling to solve a basic implementation problem could seek help from an LLM available 24/7. This article focuses on studying three aspects related to such an application. First, the performance of two well-known models, GPT-3.5T and GPT-4T, in providing feedback to students is evaluated. The empirical results showed that GPT-4T performs much better than GPT-3.5T, however, it is not yet ready for use in a real-world scenario. This is due to the possibility of generating incorrect information that potential users may not always be able to detect. Second, the article proposes a carefully designed prompt using in-context learning techniques that allows automating important parts of the evaluation process, as well as providing a lower bound for the fraction of feedbacks containing incorrect information, saving time and effort. This was possible because the resulting feedback has a programmatically analyzable structure that incorporates diagnostic information about the LLM's performance in solving the requested task. Third, the article also suggests a possible strategy for implementing a practical learning tool based on LLMs, which is rooted on the proposed prompting techniques. This strategy opens up a whole range of interesting possibilities from a pedagogical perspective.",
+    "categories": [
+        "cs.CY",
+        "cs.AI",
+        "cs.CL"
+    ],
+    "created": "2025-04-18",
+    "updated": "2025-04-21"
+}

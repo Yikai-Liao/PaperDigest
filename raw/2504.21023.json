@@ -1,0 +1,42 @@
+{
+    "title": "Param$Δ$ for Direct Weight Mixing: Post-Train Large Language Model at Zero Cost",
+    "authors": [
+        "Sheng Cao",
+        "Mingrui Wu",
+        "Karthik Prasad",
+        "Yuandong Tian",
+        "Zechun Liu"
+    ],
+    "institution": [
+        "Meta Platforms, Inc.",
+        "Meta FAIR"
+    ],
+    "problem_background": "后训练大型语言模型（LLMs）是提升模型能力（如指令遵循、推理和人类偏好对齐）的关键阶段，但它需要大量高质量数据，并面临过拟合风险，同时计算成本高昂，尤其是当基模型频繁更新时，需要重新进行后训练，导致资源浪费和效率低下。本文的工作起点是提出一种零成本的方法，通过转移现有后训练模型的知识到新更新基模型上，解决后训练过程的资源密集型问题和频繁迭代挑战。",
+    "method": "本文提出Param∆方法，其核心思想是通过计算后训练模型权重（Θpost）和基模型权重（Θbase）的差值ΔΘ，并将其添加到新基模型权重（Θ'base）上，得到Param∆模型权重ΘParamΔ = Θ'base + (Θpost - Θbase)，从而无需额外训练就转移后训练知识。实现步骤包括：1) 计算参数差值ΔΘ，该差值被假设编码了后训练过程中获得的知识和能力；2) 将ΔΘ直接应用于新基模型；3) 该方法基于参数空间的假设，即参数差值在高维空间中编码任务相关知识，且实验验证了参数差值的正交性和范数分布。该方法简单高效，不涉及模型修改，仅通过权重混合实现知识转移。",
+    "experiment": "实验在Llama、Qwen和DeepSeek模型上进行，涵盖四种场景：通用后训练、任务特定后训练、持续预训练和结合多个后训练源。使用数据集包括MMLU、IFEval、HumanEval、MBPP、GSM8K、MATH、ARC Challenge、GPQA、BFCL、API-Bank和MGSM等，实验设置全面合理，评估了模型在不同基准上的性能。结果显示，Param∆方法效果显著，例如在Llama3.1-70B模型上，Param∆模型平均达到Llama3.1-inst模型性能的95%；在任务特定场景中，医疗领域模型转移后性能保持或提升；持续预训练场景中，Param∆模型在新领域知识和指令遵循能力上表现良好。实验结果符合预期，证明了方法的有效性和鲁棒性，同时量化分析显示知识转移效率高，性能曲线平坦。",
+    "one_sentence_summary": "本文提出Param∆方法，通过直接添加参数差值在零成本下实现后训练知识向新基模型的转移，达到与传统后训练相当的性能。",
+    "slug": "param-delta-weight-mixing",
+    "keywords": [
+        "Large Language Models",
+        "Parameter Delta",
+        "Weight Mixing",
+        "Post-Training",
+        "Knowledge Transfer"
+    ],
+    "further_thoughts": "本文的Param∆方法启发我们思考参数空间的正交性如何应用于多任务学习或联邦学习中，以减少知识冲突；此外，与相关工作如Task Arithmetic或Fisher Merging结合，可能开发更先进的模型合并技术；这也为开源社区提供高效模型迭代框架，潜在地扩展到其他领域如视觉模型或多模态学习，加速AI创新并降低碳足迹。",
+    "model": "grok-3-mini-latest",
+    "temperature": 0.5,
+    "top_p": 0.7,
+    "lang": "zh",
+    "id": "2504.21023",
+    "preference": "unknown",
+    "summary_time": "2025-05-04T08:30:53.602908+00:00",
+    "score": 0.8683406136652745,
+    "abstract": "The post-training phase of large language models is essential for enhancing capabilities such as instruction-following, reasoning, and alignment with human preferences. However, it demands extensive high-quality data and poses risks like overfitting, alongside significant computational costs due to repeated post-training and evaluation after each base model update. This paper introduces $ParamΔ$, a novel method that streamlines post-training by transferring knowledge from an existing post-trained model to a newly updated base model with ZERO additional training. By computing the difference between post-trained model weights ($Θ_\\text{post}$) and base model weights ($Θ_\\text{base}$), and adding this to the updated base model ($Θ'_\\text{base}$), we define $ParamΔ$ Model as: $Θ_{\\text{Param}Δ} = Θ_\\text{post} - Θ_\\text{base} + Θ'_\\text{base}$. This approach surprisingly equips the new base model with post-trained capabilities, achieving performance comparable to direct post-training. We did analysis on LLama3, Llama3.1, Qwen, and DeepSeek-distilled models. Results indicate $ParamΔ$ Model effectively replicates traditional post-training. For example, the $ParamΔ$ Model obtained from 70B Llama3-inst, Llama3-base, Llama3.1-base models attains approximately 95\\% of Llama3.1-inst model's performance on average. $ParamΔ$ brings a new perspective on how to fully leverage models in the open-weight community, where checkpoints for base and instruct models are readily available and frequently updated, by providing a cost-free framework to accelerate the iterative cycle of model development.",
+    "categories": [
+        "cs.CL",
+        "cs.LG"
+    ],
+    "created": "2025-04-23",
+    "updated": "2025-05-01"
+}

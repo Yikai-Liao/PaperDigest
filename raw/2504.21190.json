@@ -1,0 +1,46 @@
+{
+    "title": "TT-LoRA MoE: Unifying Parameter-Efficient Fine-Tuning and Sparse Mixture-of-Experts",
+    "authors": [
+        "Pradip Kunwar",
+        "Minh N. Vu",
+        "Maanak Gupta",
+        "Mahmoud Abdelsalam",
+        "Manish Bhattarai"
+    ],
+    "institution": [
+        "Tennessee Tech University",
+        "Los Alamos National Laboratory",
+        "North Carolina A&T State University"
+    ],
+    "problem_background": "大型语言模型（LLMs）在自然语言处理（NLP）中取得了显著进展，但全量微调的计算成本和内存需求很高，导致部署和适应特定任务的挑战。参数高效微调（PEFT）方法如 LoRA 和 TT-LoRA 通过更新少量参数来缓解这些问题，但需要在推理时手动选择适配器，限制了其在多任务和动态环境中的可扩展性。同时，混合专家（MoE）架构通过动态路由提高了模型容量，但面临专家训练开销大、容量稀释、训练不稳定等问题，以及可能导致灾难性遗忘和任务间干扰。本工作的出发点是整合 PEFT 和稀疏 MoE，解决这些挑战，实现高效、可扩展的多任务学习，减少手动干预并保持基模型知识。",
+    "method": "核心思想是通过两阶段方法统一参数高效微调和稀疏混合专家：第一阶段，独立训练每个任务的 TT-LoRA 适配器，每个适配器使用张量训练分解压缩参数；第二阶段，训练一个轻量级的稀疏 MoE 路由器，使用基模型的隐藏表示动态选择专家。主步骤包括：(1) 对于每个任务，冻结基模型参数，训练 TT-LoRA 适配器，其中权重矩阵通过张量训练分解表示，例如对于权重矩阵 $W \\in \\mathbb{R}^{m \\times n}$，分解为 TT-核 $\\{ \\mathbf{G}_k \\}_{k=1}^{p+q}$，输入通过张量收缩操作计算输出，避免重建完整矩阵；(2) 训练路由器，使用带噪声的 top-1 门控机制，计算路由分数 $g_{\\bar{i}} = (h_x W_{\\text{gate}})_{\\bar{i}} + \\mathcal{N}(0, 1) \\cdot \\text{Softplus}((h_x W_{\\text{noise}})_{\\bar{i}})$，然后应用 Softmax 选择专家，实现任务无关的动态路由。这种方法不修改基模型，仅在推理时调整采样，减少了参数和计算开销。",
+    "experiment": "实验分为两部分，使用 LlaMA-3.2-1B 作为基模型，数据集包括 17 个 NLP 分类任务，如 IMDB、SST2、Hellaswag 等，涵盖情感分析、常识推理、自然语言推理等领域。实验设置全面合理：第一部分，比较 TT-LoRA 与 LoRA 和 Adapter 的性能，通过超参数搜索（表 2）和推理时间测试（表 3），结果显示 TT-LoRA 使用约 2% 的 LoRA 参数和 0.3% 的 Adapter 参数，性能竞争性，平均准确率相近；第二部分，评估 MoE 路由和多任务性能，与 AdapterFusion 比较（表 6 和表 7），TT-LoRA MoE 在单任务和多任务设置中保留了专家性能，平均准确率提高约 4%，参数效率高（使用 AdapterFusion 参数的 0.03%）。路由准确率测试（表 5）显示路由器高效，处理多达 17 个任务。结果符合预期，验证了方法的参数效率、推理速度和多任务适应能力。",
+    "one_sentence_summary": "本文提出 TT-LoRA MoE 框架，通过两阶段解耦的专家训练和路由机制，实现了参数高效的多任务学习，显著减少计算开销并保持性能。",
+    "slug": "tt-lora-moe",
+    "keywords": [
+        "PEFT",
+        "Mixture of Experts",
+        "TT-LoRA",
+        "Scalable Inference",
+        "Incremental Learning",
+        "Multi-Tasking",
+        "LLM",
+        "NLP"
+    ],
+    "further_thoughts": "本文的 TT-LoRA MoE 框架通过张量训练分解和稀疏路由，高效解决了多任务学习中的参数效率和可扩展性问题，值得注意的是，这种解耦设计可能扩展到其他领域，如视觉模型或强化学习中，以减少训练开销；此外，与 AdapterFusion 比较显示其优势，未来可探索结合其他 PEFT 方法或在联邦学习中应用张量分解来降低通信成本；同时，路由机制的鲁棒性在动态任务环境中可能进一步优化，结合最近的工作如 MoLE 或 AdaMoLE，能够提升专家间协作，增强泛化能力。",
+    "model": "grok-3-mini-latest",
+    "temperature": 0.5,
+    "top_p": 0.7,
+    "lang": "zh",
+    "id": "2504.21190",
+    "preference": "unknown",
+    "summary_time": "2025-05-04T08:32:29.029177+00:00",
+    "score": 0.8140536753199535,
+    "abstract": "We propose Tensor-Trained Low-Rank Adaptation Mixture of Experts (TT-LoRA MoE), a novel computational framework integrating Parameter-Efficient Fine-Tuning (PEFT) with sparse MoE routing to address scalability challenges in large model deployments. Unlike traditional MoE approaches, which face substantial computational overhead as expert counts grow, TT-LoRA MoE decomposes training into two distinct, optimized stages. First, we independently train lightweight, tensorized low-rank adapters (TT-LoRA experts), each specialized for specific tasks. Subsequently, these expert adapters remain frozen, eliminating inter-task interference and catastrophic forgetting in multi-task setting. A sparse MoE router, trained separately, dynamically leverages base model representations to select exactly one specialized adapter per input at inference time, automating expert selection without explicit task specification. Comprehensive experiments confirm our architecture retains the memory efficiency of low-rank adapters, seamlessly scales to large expert pools, and achieves robust task-level optimization. This structured decoupling significantly enhances computational efficiency and flexibility: uses only 2% of LoRA, 0.3% of Adapters and 0.03% of AdapterFusion parameters and outperforms AdapterFusion by 4 value in multi-tasking, enabling practical and scalable multi-task inference deployments.",
+    "categories": [
+        "cs.LG",
+        "cs.AI"
+    ],
+    "created": "2025-04-29",
+    "updated": "2025-05-01"
+}

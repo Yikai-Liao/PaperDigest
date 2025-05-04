@@ -1,0 +1,43 @@
+{
+    "title": "Synergizing RAG and Reasoning: A Systematic Review",
+    "authors": [
+        "Yunfan Gao",
+        "Yun Xiong",
+        "Yijie Zhong",
+        "Yuxi Bi",
+        "Ming Xue",
+        "Haofen Wang"
+    ],
+    "institution": [
+        "Tongji University",
+        "Fudan University",
+        "Percena AI"
+    ],
+    "problem_background": "本论文的起点是最近大型语言模型（LLMs）在推理能力上的突破，推动了检索增强生成（RAG）技术的发展。传统RAG系统存在诸多局限性，包括难以捕捉模糊查询意图、多跳推理逻辑连贯性差、传统检索在开放域中的效率限制，以及从噪声检索数据中生成质量下降等问题。论文旨在解决这些问题，探讨RAG与推理能力的协同作用，定义了RAG上下文中的推理概念，并分析了双向协同方法，以提升RAG系统在复杂任务中的性能，如深度研究和复杂决策支持。",
+    "method": "* **核心思想：** 论文提出RAG与推理协同的系统性框架，强调通过推理增强检索和检索增强推理的双向互补。核心是构建一个多维分类体系，包括协同目的（如推理增强检索和检索增强推理）、协同范式（如预定义工作流和动态工作流）、以及实现方法（如基于提示、微调和强化学习的策略）。\n* **工作原理：** 首先，定义推理为一个结构化多步过程，数学表示为元组⟨K, K, S, Φ⟩，其中K是参数知识，K是检索知识，S是状态序列，Φ是状态转移函数。协同范式包括预定义工作流（如预检索推理：D = Γ ∘ R ∘ Ψ(Q)，后检索推理：D = Γ ∘ Ψ ∘ R(Q)，和混合推理）和动态工作流（如主动驱动、反思驱动和反馈驱动）。实现方法涉及LLM-based推理、特殊标记预测、搜索驱动推理（如基于MCTS的策略）、图结构推理和外部求解器优化。\n* **主要步骤：** (1) 定义推理和协同概念；(2) 构建分层分类体系；(3) 分析协同目的、范式和实现；(4) 通过提示、微调和RL优化推理过程。",
+    "experiment": "* **数据集和设置：** 论文回顾了多种数据集，如HotpotQA、2WikiMultihopQA和MuSiQue用于多跳问答，GPQA和MATH500用于专家级推理，FinSearchBench-24用于金融领域等。实验设置包括理论分析和实际评估，旨在验证RAG-推理协同的有效性，例如通过比较传统RAG与增强版在准确率、逻辑连贯性和效率方面的表现。设置合理全面，覆盖了从简单事实检索到复杂多跳推理的任务。\n* **为什么这样设计：** 实验旨在桥接理论与实践，评估协同方法在处理模糊查询、多源数据整合和动态知识需求时的优势，同时暴露当前评估的局限性，如缺乏中间步骤监督和成本-风险权衡。\n* **结果与预期匹配：** 结果显示，协同方法显著提高了任务性能，例如在多跳QA上准确率提升，但也确认了预期中的挑战，如计算开销增加和潜在过思考风险。实验证明了推理增强检索（如动态查询重写）和检索增强推理（如知识补全）的有效性，与预期一致。",
+    "one_sentence_summary": "本论文系统综述了检索增强生成（RAG）与推理能力的协同整合，构建了多维分类框架、提供了实用指南，并指出了未来研究方向，以推进RAG系统在复杂任务中的认知能力。",
+    "slug": "synergizing-rag-and-reasoning-systematic-review",
+    "keywords": [
+        "RAG",
+        "Reasoning",
+        "LLM",
+        "Retrieval-Augmented Generation",
+        "Multi-hop Reasoning"
+    ],
+    "further_thoughts": "论文强调RAG与推理协同的潜力，但未来可扩展到多模态场景，如结合视觉和音频数据提升跨域推理；此外，与图神经网络的深度融合可能进一步优化知识表示和检索效率；同时，考虑到AI安全，探索RL驱动的鲁棒性优化可减少幻觉风险，并与领域特定应用（如医疗诊断的因果推理）相结合，构建更具泛化能力的智能系统。",
+    "model": "grok-3-mini-latest",
+    "temperature": 0.5,
+    "top_p": 0.7,
+    "lang": "zh",
+    "id": "2504.15909",
+    "preference": "unknown",
+    "summary_time": "2025-05-04T08:28:28.423865+00:00",
+    "score": 0.547464361431509,
+    "abstract": "Recent breakthroughs in large language models (LLMs), particularly in reasoning capabilities, have propelled Retrieval-Augmented Generation (RAG) to unprecedented levels. By synergizing retrieval mechanisms with advanced reasoning, LLMs can now tackle increasingly complex problems. This paper presents a systematic review of the collaborative interplay between RAG and reasoning, clearly defining \"reasoning\" within the RAG context. It construct a comprehensive taxonomy encompassing multi-dimensional collaborative objectives, representative paradigms, and technical implementations, and analyze the bidirectional synergy methods. Additionally, we critically evaluate current limitations in RAG assessment, including the absence of intermediate supervision for multi-step reasoning and practical challenges related to cost-risk trade-offs. To bridge theory and practice, we provide practical guidelines tailored to diverse real-world applications. Finally, we identify promising research directions, such as graph-based knowledge integration, hybrid model collaboration, and RL-driven optimization. Overall, this work presents a theoretical framework and practical foundation to advance RAG systems in academia and industry, fostering the next generation of RAG solutions.",
+    "categories": [
+        "cs.IR"
+    ],
+    "created": "2025-04-24",
+    "updated": "2025-04-25"
+}

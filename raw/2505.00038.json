@@ -1,0 +1,37 @@
+{
+    "title": "HyPerAlign: Hypotheses-driven Personalized Alignment",
+    "authors": [
+        "Cristina Garbacea",
+        "Chenhao Tan"
+    ],
+    "institution": [
+        "芝加哥大学"
+    ],
+    "problem_background": "当前的大型语言模型（LLM）对齐算法通常依赖于从多样化用户群体中聚合的偏好标注，这些偏好反映了不同用户在实际应用中的意图，但这种聚合导致模型生成通用化且乏味的响应。然而，在实际使用中，LLM往往服务于个体用户在特定情境下的需求，这强调了需要用户依赖的偏好控制。本工作针对LLM输出个性化的问题，旨在通过少样本示例推断用户的沟通策略、个性和写作风格，并生成定制化响应，以解决高效推断用户隐性偏好和实现细粒度用户中心对齐的关键挑战。",
+    "method": "HyPerAlign是一种可解释且样本高效的假设驱动个性化对齐方法，分为两个主要步骤：（1）推断用户特定属性，包括使用提示（如\"如何描述作者的写作风格？\"、\"作者的个性特征是什么？\"）直接提取用户的写作风格和个性特征，或采用HypoGenic系统基于少样本用户示例生成数据驱动假设，这些假设捕捉用户的价值观、个性特征、观点、兴趣、沟通风格、语气等；（2）通过提示LLM模型使用这些假设和用户属性描述定制化生成响应，实现推理时的对齐，而非通过微调。核心优势在于其可解释性、效率和可扩展性，仅需少量用户演示即可利用LLM的零样本和上下文学习能力。",
+    "experiment": "实验涉及两个个性化任务：作者归属（使用CMCC、CCAT50和CUSTOM数据集，涵盖电子邮件、博客和新闻领域）和审议对齐（使用XTest数据集，评估于StrongReject和SorryBench基准）。作者归属任务中，HyPerAlign与DITTO基线比较，采用Gemini-1.5-Flash作为评判器，HyPerAlign在少样本设置下实现高胜率（通常>90%），如CUSTOM数据集上多个模型达到100%胜率；审议对齐任务中，HyPerAlign通过HypoGenic假设减少有害性分数，平均改善StrongReject基准达70%，SorryBench达39%，实验设置全面合理，包括多种LLM模型和评估器，结果符合预期，证明了方法的有效性和假设的泛化能力。",
+    "one_sentence_summary": "本文提出HyPerAlign方法，通过假设驱动的少样本学习实现LLM的个性化对齐，提高了模型对个体用户的适应性和安全性，同时减少了对微调的依赖。",
+    "slug": "hyperalign-hypotheses-driven-personalized-alignment",
+    "keywords": [
+        "Large Language Models",
+        "Personalization",
+        "Hypotheses Generation",
+        "Alignment",
+        "In-Context Learning"
+    ],
+    "further_thoughts": "HyPerAlign的假设生成机制可能与交互式对齐方法结合，实现用户偏好的动态更新和长期记忆存储，以提升实时个性化；此外，需要关注隐私保护和避免回音室效应风险，例如通过与风格嵌入（如VibeCheck）或角色扮演基准（Persona Hub）的整合，探索更鲁棒的泛化能力；同时，在安全领域，HyPerAlign的审议对齐思路可扩展到多模态模型，平衡帮助性和无害性，但必须确保社会接受度边界。",
+    "model": "grok-3-mini-latest",
+    "temperature": 0.5,
+    "top_p": 0.7,
+    "lang": "zh",
+    "id": "2505.00038",
+    "preference": "unknown",
+    "summary_time": "2025-05-04T08:32:03.272074+00:00",
+    "score": 0.6501247126620431,
+    "abstract": "Alignment algorithms are widely used to align large language models (LLMs) to human users based on preference annotations that reflect their intended real-world use cases. Typically these (often divergent) preferences are aggregated over a diverse set of users, resulting in fine-tuned models that are aligned to the ``average-user'' preference. Nevertheless, current models are used by individual users in very specific contexts and situations, emphasizing the need for user-dependent preference control. In this work we address the problem of personalizing LLM outputs to their users, aiming to generate customized responses tailored to individual users, instead of generic outputs that emulate the collective voices of diverse populations. We propose a novel interpretable and sample-efficient hypotheses-driven personalization approach (HyPerAlign) where given few-shot examples written by a particular user, we first infer hypotheses about their communication strategies, personality and writing style, then prompt LLM models with these hypotheses and user specific attributes to generate customized outputs. We conduct experiments on two different personalization tasks, authorship attribution and deliberative alignment, with datasets from diverse domains (news articles, blog posts, emails, jailbreaking benchmarks), and demonstrate the superiority of hypotheses-driven personalization approach when compared to preference-based fine-tuning methods. For deliberative alignment, the helpfulness of LLM models is improved by up to $70\\%$ on average. For authorship attribution, results indicate consistently high win-rates (commonly $>90\\%$) against state-of-the-art preference fine-tuning approaches for LLM personalization across diverse user profiles and LLM models. Overall, our approach represents an interpretable and sample-efficient strategy for the personalization of LLM models to individual users.",
+    "categories": [
+        "cs.CL"
+    ],
+    "created": "2025-04-29",
+    "updated": "2025-05-02"
+}

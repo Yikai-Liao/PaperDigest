@@ -1,0 +1,41 @@
+{
+    "title": "SAGE: A Framework of Precise Retrieval for RAG",
+    "authors": [
+        "Jintao Zhang",
+        "Guoliang Li",
+        "Jinyang Su"
+    ],
+    "institution": [
+        "Tsinghua University"
+    ],
+    "problem_background": "检索增强生成（RAG）技术在特定语料库上的问答（QA）任务中表现出色，但仍存在许多失败案例，这些失败主要源于检索阶段的局限性而非大型语言模型（LLM）的不足。具体问题包括：（1）当前RAG方法在分割语料时未考虑语义，导致块之间相关性受损，难以检索到与问题相关的完整上下文；（2）在检索块数量上存在权衡：检索较少块可能遗漏关键上下文，而检索较多块则可能引入无关噪声，难以动态平衡。",
+    "method": "*   **核心思想：** SAGE框架旨在通过改进检索阶段的精确性来提升RAG系统的性能，具体包括语义分割、基于梯度的块选择和LLM自反馈机制，以解决语料分割不考虑语义和检索噪声或缺失的问题。\n*   **语义分割：** 训练一个轻量级模型（包括嵌入模型和多层感知器MLP），使用Wikipedia数据集中的句子对进行监督学习，判断相邻句子是否应保持在同一块中。模型输入两个句子的嵌入向量及其差值和乘积，输出分数；推断时，对语料先粗粒度分割成完整句子块，然后细粒度调整，确保每个块语义完整。具体步骤见算法1。\n*   **基于梯度的块选择：** 动态选择相关块，而不是固定K值。使用重排序模型对从向量数据库查询的N个块评分，按分数降序排序，选择分数梯度显著下降前的块（阈值g），确保最小块数min k。具体步骤见算法2。\n*   **LLM自反馈：** 让LLM评估生成的答案质量和检索块是否过多或过少，并调整块数量K。反馈循环通过提示模板获取评分和调整建议，直到答案质量达标或迭代三次。",
+    "experiment": "*   **数据集和设置：** 使用NarrativeQA、QuALITY、QASPER和TriviaQA数据集，评估指标包括ROUGE、BLEU、METEOR、Accuracy和F1-Match。实验比较SAGE与基线（如Naive RAG、BM25、DPR等）的端到端QA性能、成本效率和可扩展性。SAGE使用不同LLM（如GPT-4o-mini、UnifiedQA-3B）和检索器（OpenAI Embedding、SBERT等）。\n*   **结果分析：** 在NarrativeQA上，SAGE平均提升ROUGE 8.15%、BLEU-1 17.27%、BLEU-4 81.51%、METEOR 11.89%；在QuALITY和QASPER上，SAGE分别提升Accuracy 2.88%和F1-Match 6.79%。消融实验证实每个模块的有效性，SAGE在成本效率上提升49.41%，通过减少噪声块降低LLM推理token消耗。案例研究展示了噪声检索、缺失检索和无效分割的问题。\n*   **合理性：** 实验设置全面，覆盖不同数据集和LLM，消融研究验证了模块贡献，结果符合预期，证明SAGE在提升QA性能和成本效率方面的优势。",
+    "one_sentence_summary": "本文提出SAGE框架，通过语义分割、基于梯度的块选择和LLM自反馈机制，提高RAG系统的检索精度和问答性能，同时显著降低成本。",
+    "slug": "sage-precise-retrieval-for-rag",
+    "keywords": [
+        "RAG",
+        "Semantic Segmentation",
+        "Chunk Selection",
+        "LLM Feedback",
+        "Retrieval Precision"
+    ],
+    "further_thoughts": "SAGE框架的语义分割和动态块选择机制可能扩展到多模态检索领域，如结合[26]和[64]的工作，提升跨模态一致性；此外，自反馈机制可与LLM fine-tuning整合，参考[2]和[65]，潜在降低成本并提升泛化能力；未来可探索更灵活的块选择策略，如直接训练LLM进行选择，或应用于多跳检索[21]，以处理复杂查询场景。",
+    "model": "grok-3-mini-latest",
+    "temperature": 0.5,
+    "top_p": 0.7,
+    "lang": "zh",
+    "id": "2503.01713",
+    "preference": "unknown",
+    "summary_time": "2025-05-04T08:27:34.874065+00:00",
+    "score": 0.6413067945419503,
+    "abstract": "Retrieval-augmented generation (RAG) has demonstrated significant proficiency in conducting question-answering (QA) tasks within a specified corpus. Nonetheless, numerous failure instances of RAG in QA still exist. These failures are not solely attributable to the limitations of Large Language Models (LLMs); instead, they predominantly arise from the retrieval of inaccurate information for LLMs due to two limitations: (1) Current RAG methods segment the corpus without considering semantics, making it difficult to find relevant context due to impaired correlation between questions and the segments. (2) There is a trade-off between missing essential context with fewer context retrieved and getting irrelevant context with more context retrieved.   In this paper, we introduce a RAG framework (SAGE), to overcome these limitations. First, to address the segmentation issue without considering semantics, we propose to train a semantic segmentation model. This model is trained to segment the corpus into semantically complete chunks. Second, to ensure that only the most relevant chunks are retrieved while the irrelevant ones are ignored, we design a chunk selection algorithm to dynamically select chunks based on the decreasing speed of the relevance score, leading to a more relevant selection. Third, to further ensure the precision of the retrieved chunks, we propose letting LLMs assess whether retrieved chunks are excessive or lacking and then adjust the amount of context accordingly. Experiments show that SAGE outperforms baselines by 61.25% in the quality of QA on average. Moreover, by avoiding retrieving noisy context, SAGE lowers the cost of the tokens consumed in LLM inference and achieves a 49.41% enhancement in cost efficiency on average. Additionally, our work offers valuable insights for boosting RAG.",
+    "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.DB",
+        "cs.IR"
+    ],
+    "created": "2025-04-30",
+    "updated": "2025-05-01"
+}
