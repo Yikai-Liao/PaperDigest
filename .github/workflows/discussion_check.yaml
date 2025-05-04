@@ -55,6 +55,11 @@ jobs:
             discussions.json \
             "${{ github.repository_owner }}"
 
+      - name: 渲染Markdonw
+        run: |
+          pip install -r requirements.txt
+          python script/render_md.py
+
       - name: 显示本地Git变更情况
         run: git status
 
