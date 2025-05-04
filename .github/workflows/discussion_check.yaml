@@ -3,7 +3,7 @@ name: Daily Discussion Check
 on:
   workflow_dispatch: # 允许手动触发
   schedule:
-    - cron: "0 1 * * *" # 每天UTC时间1点运行
+    - cron: "0 * * * *" # 每小时整点触发一次
 
 permissions:
   discussions: read # 需要读取讨论的权限
