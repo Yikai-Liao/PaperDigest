@@ -99,9 +99,9 @@ def main(discussions_path, repo_owner):
         print(f"文件 {csv_path} 已创建，包含 {len(patch)} 行数据")
     else:
         # 读取，并覆盖可能重复的行，然后新增
-        existing_data = pl.read_csv(csv_path)
+        existing_data = pl.read_csv(csv_path, schema={"id": pl.Utf8, "preference": pl.Utf8})
         print(f"文件 {csv_path} 已存在，读取现有数据 {len(existing_data)} 行")
-        combined_data = pl.concat([existing_data, patch]).unique(subset=["id"], keep="last")
+        combined_data = pl.concat([existing_data, patch]).unique(subset=["id"], keep="last").sort("id")
         combined_data.write_csv(csv_path, include_header=True)
         print(f"文件 {csv_path} 已更新，包含 {len(combined_data)} 行数据")
 
