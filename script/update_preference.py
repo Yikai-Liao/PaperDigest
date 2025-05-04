@@ -82,6 +82,9 @@ def main(discussions_path, repo_owner):
         with open(json_idx[stem].resolve(), "r", encoding="utf-8") as f:
             json_data = json.load(f)
         json_data["preference"] = pref
+        # Write back to the JSON file
+        with open(json_idx[stem].resolve(), "w", encoding="utf-8") as f:
+            json.dump(json_data, f, indent=4, ensure_ascii=False)
 
         ids.append(stem)
         prefs.append(pref)
