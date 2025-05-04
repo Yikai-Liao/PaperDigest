@@ -1,0 +1,87 @@
+name: Daily Discussion Check
+
+on:
+  workflow_dispatch: # 允许手动触发
+  schedule:
+    - cron: "0 1 * * *" # 每天UTC时间1点运行
+
+permissions:
+  discussions: read # 需要读取讨论的权限
+  contents: write # 需要写入/提交文件的权限
+
+jobs:
+  check_discussions:
+    name: 检查最近讨论更新并更新偏好
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 设置Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: 安装依赖
+        run: pip install polars requests
+
+      - name: 获取日期信息
+        id: date
+        run: |
+          echo "since=$(date -u -d '1 day ago' '+%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
+          echo "yearmonth=$(date '+%Y-%m')" >> $GITHUB_OUTPUT
+
+      - name: 获取讨论数据
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: |
+          python script/fetch_discussion.py \
+            "$REPO_OWNER" \
+            "$REPO_NAME" \
+            "$GH_TOKEN"
+
+      - name: 更新偏好文件
+        id: update_prefs
+        run: |
+          python script/update_preference.py \
+            discussions.json \
+            "${{ github.repository_owner }}" \
+            "${{ steps.date.outputs.since }}" \
+            "${{ steps.date.outputs.yearmonth }}" > output.log || true
+            
+          # 从输出中提取更新的文件列表
+          files=$(awk '/<<<UPDATED_FILES_START>>>/{flag=1; next} /<<<UPDATED_FILES_END>>>/{flag=0} flag' output.log)
+          echo "updated_files=$files" >> $GITHUB_OUTPUT
+      
+      - name: Upload Discussion Data
+        uses: actions/upload-artifact@v4
+        with:
+          name: discussions
+          path: discussions.json
+          
+
+      # - name: 提交和推送偏好变更
+      #   if: steps.update_prefs.outputs.updated_files != ''
+      #   run: |
+      #     git config --global user.email "lyk-boya@outlook.com"
+      #     git config --global user.name "GitHub Action"
+          
+      #     # 添加所有更新的文件
+      #     for file in ${{ steps.update_prefs.outputs.updated_files }}; do
+      #       git add "$file"
+      #     done
+          
+      #     # 检查是否有暂存的更改后再提交
+      #     if git diff --staged --quiet; then
+      #       echo "没有更改需要提交。"
+      #     else
+      #       git commit -m "基于讨论反馈更新偏好配置"
+      #       git push
+      #       echo "偏好更改已提交和推送。"
+      #     fi
+
+      # - name: 清理临时文件
+      #   if: always() # 始终运行清理
+      #   run: rm -f discussions.json output.log
