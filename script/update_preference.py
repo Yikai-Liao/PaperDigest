@@ -92,7 +92,7 @@ def main(discussions_path, repo_owner):
     patch = pl.DataFrame({"id": ids, "preference": prefs}, schema={"id": pl.Utf8, "preference": pl.Utf8})
 
     # YYYY-MM.csv from now
-    csv_path = Path("raw") / f"{datetime.now().strftime('%Y-%m')}.csv"
+    csv_path = Path("preference") / f"{datetime.now().strftime('%Y-%m')}.csv"
     if not csv_path.exists():
         print(f"文件 {csv_path} 不存在，创建新文件")
         patch.write_csv(csv_path, include_header=True)
