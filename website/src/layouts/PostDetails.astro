@@ -7,7 +7,7 @@ import Tag from "@/components/Tag.astro";
 import Datetime from "@/components/Datetime.astro";
 import EditPost from "@/components/EditPost.astro";
 import ShareLinks from "@/components/ShareLinks.astro";
-import BackButton from "@/components/BackButton.astro";
+import LinkButton from "@/components/LinkButton.astro"; // 添加 LinkButton 导入
 import Comments from "@/components/Comments"; // 导入 Comments 组件
 import { getPath } from "@/utils/getPath";
 import { slugifyStr } from "@/utils/slugify";
@@ -37,6 +37,11 @@ const {
   score, // 添加 score 属性
   preference, // 添加 preference 属性
 } = post.data;
+
+// 从文章ID中提取arXiv ID
+const arxivId = post.id;
+// 构建arXiv链接
+const arxivUrl = `https://arxiv.org/abs/${arxivId}`;
 
 const { Content } = await render(post);
 
@@ -92,7 +97,20 @@ const preferenceEmoji = getPreferenceEmoji(preference);
 
 <Layout {...layoutProps}>
   <Header />
-  <BackButton />
+  <div class="flex items-center justify-between w-full max-w-3xl mx-auto mt-8 px-4">
+    <LinkButton id="back-button" href="/" class="text-lg flex items-center whitespace-nowrap opacity-75 hover:opacity-100 hover:underline">
+      <IconChevronLeft class="inline-block size-6" />
+      <span>Go back</span>
+    </LinkButton>
+    <a
+      href={arxivUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="text-lg flex items-center whitespace-nowrap opacity-75 hover:opacity-100 hover:underline hover:text-accent"
+    >
+      {arxivId} <span class="ml-3">📄</span>
+    </a>
+  </div>
   <main
     id="main-content"
     class:list={[

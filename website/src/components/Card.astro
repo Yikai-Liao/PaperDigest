@@ -23,6 +23,9 @@ const formattedScore = score !== undefined ? (score * 100).toFixed(2) : null;
 
 // 使用共享函数获取表情符号
 const preferenceEmoji = getPreferenceEmoji(preference);
+
+// 构建arXiv链接
+const arxivUrl = `https://arxiv.org/abs/${id}`;
 ---
 
 <li class="my-6">
@@ -39,7 +42,12 @@ const preferenceEmoji = getPreferenceEmoji(preference);
     }
   </a>
   <div class="flex items-center justify-between">
-    <Datetime {pubDatetime} {modDatetime} {timezone} />
+    <div class="flex items-center gap-2">
+      <Datetime {pubDatetime} {modDatetime} {timezone} />
+      <a href={arxivUrl} target="_blank" rel="noopener noreferrer" class="text-accent hover:underline ml-2 text-sm">
+        <span>📄</span>
+      </a>
+    </div>
     {(formattedScore || preferenceEmoji) && (
       <div class="flex items-center gap-2 text-sm">
         {formattedScore && (
