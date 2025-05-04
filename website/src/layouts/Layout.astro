@@ -2,6 +2,8 @@
 import { ClientRouter } from "astro:transitions";
 import { SITE } from "@/config";
 import "@/styles/global.css";
+import Analytics from '@vercel/analytics/astro';
+import { GoogleAnalytics } from 'astro-analytics';
 
 const googleSiteVerification = import.meta.env.PUBLIC_GOOGLE_SITE_VERIFICATION;
 
@@ -134,9 +136,13 @@ const structuredData = {
     <ClientRouter />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css" />
     <script is:inline src="/toggle-theme.js"></script>
+    
+    <!-- Google Analytics -->
+    <GoogleAnalytics id="G-GX6E4ZD26C" />
   </head>
   <body>
     <slot />
+    <Analytics />
   </body>
 </html>
 
