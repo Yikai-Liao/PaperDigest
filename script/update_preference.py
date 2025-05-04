@@ -8,6 +8,7 @@ import glob
 from pathlib import Path
 import re
 from collections import defaultdict
+import argparse
 
 def build_json_index(json_root: Path):
     return {json_file.stem: json_file for json_file in json_root.glob("**/*.json")}
@@ -100,7 +101,16 @@ def main(discussions_path, repo_owner):
 
 if __name__ == "__main__":
     # 用法: python update_preference_from_discussion.py discussions.json repo_owner since_iso yearmonth
-    if len(sys.argv) == 3:
-        print("用法: python update_preference_from_discussion.py <discussions.json> <repo_owner>")
-        sys.exit(1)
-    main(*sys.argv[1:3])
+    # if len(sys.argv) == 3:
+    #     print("用法: python update_preference_from_discussion.py <discussions.json> <repo_owner>")
+    #     sys.exit(1)
+    # main(*sys.argv[1:3])
+
+    parser = argparse.ArgumentParser(description="从讨论数据中提取反应并更新偏好文件")
+    parser.add_argument("discussions_path", type=str, help="讨论数据JSON文件路径")
+    parser.add_argument("repo_owner", type=str, help="仓库所有者")
+
+    args = parser.parse_args()
+    discussions_path = args.discussions_path
+    repo_owner = args.repo_owner
+    main(Path(discussions_path), repo_owner)
