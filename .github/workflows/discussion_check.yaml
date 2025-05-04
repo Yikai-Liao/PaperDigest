@@ -42,25 +42,22 @@ jobs:
             "$REPO_NAME" \
             "$GH_TOKEN"
 
-      - name: 更新偏好文件
-        id: update_prefs
-        run: |
-          python script/update_preference.py \
-            discussions.json \
-            "${{ github.repository_owner }}" \
-            "${{ steps.date.outputs.since }}" \
-            "${{ steps.date.outputs.yearmonth }}" > output.log || true
-            
-          # 从输出中提取更新的文件列表
-          files=$(awk '/<<<UPDATED_FILES_START>>>/{flag=1; next} /<<<UPDATED_FILES_END>>>/{flag=0} flag' output.log)
-          echo "updated_files=$files" >> $GITHUB_OUTPUT
-      
       - name: Upload Discussion Data
         uses: actions/upload-artifact@v4
         with:
           name: discussions
           path: discussions.json
-          
+
+      - name: 更新偏好文件
+        id: update_prefs
+        run: |
+          python script/update_preference.py \
+            discussions.json \
+            "${{ github.repository_owner }}"
+
+      - name: 显示本地Git变更情况
+        run: git status
+
 
       # - name: 提交和推送偏好变更
       #   if: steps.update_prefs.outputs.updated_files != ''

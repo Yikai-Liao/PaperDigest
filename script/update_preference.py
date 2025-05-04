@@ -5,58 +5,30 @@ import json
 import polars as pl
 from datetime import datetime
 import glob
+from pathlib import Path
+import re
+from collections import defaultdict
 
-def update_raw_json_preferences(arxiv_id, preference_value):
-    """
-    更新raw目录下对应arxiv论文的JSON文件中的preference字段
-    
-    参数:
-        arxiv_id: 论文ID (如 2501.12345)
-        preference_value: 偏好值 ('like' 或 'dislike')
-    
-    返回:
-        更新的文件路径列表
-    """
-    raw_dir = "raw"
-    updated_files = []
-    
-    # 查找所有可能匹配的JSON文件
-    json_pattern = os.path.join(raw_dir, f"*{arxiv_id}*.json")
-    json_files = glob.glob(json_pattern)
-    
-    if not json_files:
-        # 检查更一般的模式，仅匹配数字部分
-        id_parts = arxiv_id.split('.')
-        if len(id_parts) == 2:
-            json_pattern = os.path.join(raw_dir, f"*{id_parts[0]}*{id_parts[1]}*.json")
-            json_files = glob.glob(json_pattern)
-    
-    for json_file in json_files:
-        try:
-            with open(json_file, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-            
-            # 更新preference字段
-            data['preference'] = preference_value
-            
-            with open(json_file, 'w', encoding='utf-8') as f:
-                json.dump(data, f, ensure_ascii=False, indent=2)
-            
-            updated_files.append(json_file)
-        except Exception as e:
-            print(f"更新 {json_file} 时出错: {str(e)}")
-    
-    return updated_files
+def build_json_index(json_root: Path):
+    return {json_file.stem: json_file for json_file in json_root.glob("**/*.json")}
 
-def main(discussions_path, repo_owner, since_iso, yearmonth):
+reaction2int = defaultdict(lambda: 3, {
+    "THUMBS_UP": 0,
+    "THUMBS_DOWN": 1,
+    "EYES": 2,
+    "HEART": 0,
+})
+int2pref = ["like", "dislike", "neutral", "unknown"]
+
+
+
+def main(discussions_path, repo_owner):
     """
     从讨论数据中提取反应并更新偏好文件
     
     参数:
         discussions_path: 讨论数据JSON文件路径
         repo_owner: 仓库所有者
-        since_iso: ISO格式的日期，仅处理此日期之后更新的讨论
-        yearmonth: 年月字符串 (YYYY-MM)，用于保存偏好文件
     """
     with open(discussions_path, "r") as f:
         data = json.load(f)
@@ -67,72 +39,68 @@ def main(discussions_path, repo_owner, since_iso, yearmonth):
         print("未找到讨论数据")
         return
     
-    records = []
-    updated_json_files = set()
+    json_idx = build_json_index(Path("raw"))
+    
+    ids = []
+    prefs = []
     
     # 处理每个讨论
     for node in nodes:
         updated_at = node.get("updatedAt")
-        if not updated_at or updated_at < since_iso:
-            continue
             
         title = node.get("title", "")
-        import re
-        # 从标题中提取arxiv ID
-        m = re.match(r"^paper_machine/papers/([0-9]+\.[0-9]+)/?", title)
-        if not m:
+        stem = title.split("/")[-1].strip()
+        if not stem:
+            print(f"标题 '{title}' 无法提取stem，跳过")
             continue
-            
-        arxiv_id = m.group(1)
+        # 正常情况下, stem 应该是arxiv ID，使用正则检测是否合法
+        m = re.match(r"^\d{4}\.\d{4,5}v?\d*$", stem)
+        if not m:
+            print(f"标题 '{title}' 的stem '{stem}' 不符合arxiv ID格式，跳过")
+            continue
+
+        if m not in json_idx:
+            print(f"标题 '{title}' 的stem '{stem}' 不在raw目录下的JSON文件中，跳过")
+            continue
+
+        reactions = [
+            reaction2int[reaction['content']]
+            for reaction in node.get("reactions", {}).get("nodes", [])
+            if reaction.get("user", {}).get("login", "") == repo_owner and reaction.get("content", "") !=  ""
+        ]
         
-        # 处理反应
-        for reaction in node.get("reactions", {}).get("nodes", []):
-            if reaction.get("user", {}).get("login") == repo_owner and reaction.get("content") in ("THUMBS_UP", "THUMBS_DOWN"):
-                pref = "like" if reaction["content"] == "THUMBS_UP" else "dislike"
-                records.append((arxiv_id, pref))
-                
-                # 更新raw目录下的JSON文件
-                updated_files = update_raw_json_preferences(arxiv_id, pref)
-                updated_json_files.update(updated_files)
-    
-    if not records:
-        print("没有找到需要更新的偏好")
-        return
-    
-    # 更新preference目录下的CSV文件
-    pref_dir = "preference"
-    os.makedirs(pref_dir, exist_ok=True)
-    pref_file = os.path.join(pref_dir, f"{yearmonth}.csv")
-    
-    # 读取现有偏好CSV或创建新的
-    if os.path.exists(pref_file):
-        df = pl.read_csv(pref_file)
+        if not reactions:
+            print(f"标题 '{title}' 没有找到用户 '{repo_owner}' 的反应，跳过")
+            continue
+        
+        pref = int2pref[min(reactions)]
+        
+        # 更新raw目录下的JSON文件
+        with open(json_idx[m].resolve(), "r", encoding="utf-8") as f:
+            json_data = json.load(f)
+        json_data["preference"] = pref
+
+        ids.append(stem)
+        prefs.append(pref)
+
+    patch = pl.DataFrame({"id": ids, "preference": prefs}, schema={"id": pl.Utf8, "preference": pl.Utf8})
+
+    # YYYY-MM.csv from now
+    csv_path = Path("raw") / f"{datetime.now().strftime('%Y-%m')}.csv"
+    if not csv_path.exists():
+        print(f"文件 {csv_path} 不存在，创建新文件")
+        patch.write_csv(csv_path, has_header=True)
     else:
-        df = pl.DataFrame({"id": [], "preference": []})
-    
-    # 将新记录添加到DataFrame
-    new_df = pl.DataFrame(records, schema=["id", "preference"])
-    
-    # 合并并确保每个ID只保留最新的偏好
-    combined = pl.concat([df, new_df]).unique(subset=["id"], keep="last").sort("id")
-    
-    # 保存更新后的CSV
-    combined.write_csv(pref_file)
-    
-    # 输出结果
-    print(f"更新了CSV文件: {pref_file}")
-    print(f"更新了 {len(updated_json_files)} 个JSON文件")
-    
-    print("<<<UPDATED_FILES_START>>>")
-    print(pref_file)
-    for json_file in updated_json_files:
-        print(json_file)
-    print("<<<UPDATED_FILES_END>>>")
+        # 读取，并覆盖可能重复的行，然后新增
+        existing_data = pl.read_csv(csv_path)
+        print(f"文件 {csv_path} 已存在，读取现有数据 {len(existing_data)} 行")
+        combined_data = pl.concat([existing_data, patch]).unique(subset=["id"], keep="last")
+        combined_data.write_csv(csv_path, has_header=True)
+        print(f"文件 {csv_path} 已更新，包含 {len(combined_data)} 行数据")
 
 if __name__ == "__main__":
     # 用法: python update_preference_from_discussion.py discussions.json repo_owner since_iso yearmonth
-    if len(sys.argv) < 5:
-        print("用法: python update_preference_from_discussion.py <discussions.json> <repo_owner> <since_iso> <yearmonth>")
+    if len(sys.argv) == 3:
+        print("用法: python update_preference_from_discussion.py <discussions.json> <repo_owner>")
         sys.exit(1)
-    
-    main(*sys.argv[1:5])
+    main(*sys.argv[1:3])
