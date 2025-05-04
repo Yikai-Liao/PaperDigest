@@ -1,0 +1,35 @@
+---
+id: {{ id | tojson }}
+title: {{ title | tojson }}
+slug: {{ slug | tojson }}
+description: {{ one_sentence_summary | tojson }}
+author: {{ model | tojson }}
+pubDatetime: {{ summary_time }}
+preference: {{ preference | tojson }}
+featured: false
+draft: false
+---
+
+> {{ one_sentence_summary }}
+
+> {{ keywords | join(', ') }} 
+
+> {{ authors | join(', ') }}
+
+> {{ institution | join(', ') }} 
+
+## Background Problem
+
+{{ problem_background }}
+
+## Method
+
+{{ method }}
+
+## Experiment
+
+{{ experiment }}
+
+## Further Thoughts 
+
+{{ further_thoughts }}

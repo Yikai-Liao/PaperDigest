@@ -6,3 +6,6 @@ arxiv
 toml
 loguru
 huggingface_hub[cli]
+openai
+jinja2
+pydantic

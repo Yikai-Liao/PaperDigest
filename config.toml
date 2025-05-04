@@ -62,7 +62,4 @@ model = "grok-3-mini-latest"
 temperature = 0.5
 # Top-p nucleus sampling
 top_p = 0.8
-# Maximum tokens to generate in the completion
-max_tokens = 20000
-max_concurrent_llm_calls = 10
-stream=false
+max_concurrent = 3
