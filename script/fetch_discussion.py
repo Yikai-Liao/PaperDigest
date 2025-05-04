@@ -51,7 +51,11 @@ def main(owner, repo, token, out_path="discussions.json"):
     )
     resp.raise_for_status()
     
-    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    # 修复：仅当输出路径有目录部分时才创建目录
+    dir_name = os.path.dirname(out_path)
+    if dir_name:  # 确保目录名不为空
+        os.makedirs(dir_name, exist_ok=True)
+        
     with open(out_path, "w") as f:
         json.dump(resp.json(), f, indent=2)
         
