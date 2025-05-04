@@ -50,14 +50,8 @@ def main(owner, repo, token, out_path="discussions.json"):
         headers=headers,
     )
     resp.raise_for_status()
-    
-    # 修复：仅当输出路径有目录部分时才创建目录
-    dir_name = os.path.dirname(out_path)
-    if dir_name:  # 确保目录名不为空
-        os.makedirs(dir_name, exist_ok=True)
-        
     with open(out_path, "w") as f:
-        json.dump(resp.json(), f, indent=2)
+        json.dump(resp.json(), f, indent=2, ensure_ascii=False)
         
     print(f"讨论数据已保存到 {out_path}")
 
