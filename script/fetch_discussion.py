@@ -18,7 +18,7 @@ def main(owner, repo, token, out_path="discussions.json"):
     query($repoOwner: String!, $repoName: String!) {
       repository(owner: $repoOwner, name: $repoName) {
         discussions(
-          last: 150,
+          last: 100,
           orderBy: {field: UPDATED_AT, direction: DESC}
         ) {
           nodes {
