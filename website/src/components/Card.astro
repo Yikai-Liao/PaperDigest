@@ -45,7 +45,7 @@ const arxivUrl = `https://arxiv.org/abs/${id}`;
     <div class="flex items-center gap-2">
       <Datetime {pubDatetime} {modDatetime} {timezone} />
       <a href={arxivUrl} target="_blank" rel="noopener noreferrer" class="text-accent hover:underline ml-2 text-sm">
-        <span>📄</span>
+        <img src="/arxiv-logomark-small.svg" alt="arXiv logo" class="inline-block size-4" />
       </a>
     </div>
     {(formattedScore || preferenceEmoji) && (
