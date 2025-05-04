@@ -1,10 +1,10 @@
 export const SITE = {
-  website: "https://astro-paper.pages.dev/", // replace this with your deployed domain
-  author: "Sat Naing",
-  profile: "https://satnaing.dev/",
-  desc: "A minimal, responsive and SEO-friendly Astro blog theme.",
-  title: "AstroPaper",
-  ogImage: "astropaper-og.jpg",
+  website: "https://digest.lyk-ai.com", // replace this with your deployed domain
+  author: "Yikai Liao",
+  profile: "https://yikai-liao.github.io/academicpages/",
+  desc: "An AI based and personalized paper recommendation & summarization system",
+  title: "Paper Digest",
+  ogImage: "ai_reading.webp",
   lightAndDarkMode: true,
   postPerIndex: 10,
   postPerPage: 10,
@@ -14,7 +14,7 @@ export const SITE = {
   editPost: {
     enabled: false,
     text: "Suggest Changes",
-    url: "https://github.com/satnaing/astro-paper/edit/main/",
+    url: "",
   },
   dynamicOgImage: true,
   lang: "zh-CN", // html lang code. Set this empty and default will be "en"
