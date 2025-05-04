@@ -20,6 +20,8 @@ const blog = defineCollection({
       canonicalURL: z.string().optional(),
       hideEditPost: z.boolean().optional(),
       timezone: z.string().optional(),
+      score: z.number().min(0).max(1).optional(), // Add score field (0-1 range)
+      preference: z.enum(["like", "dislike", "neutral", "unknown"]).optional(), // 添加 neutral 选项
     }),
 });
 

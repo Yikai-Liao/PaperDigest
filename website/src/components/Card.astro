@@ -2,6 +2,7 @@
 import { slugifyStr } from "@/utils/slugify";
 import type { CollectionEntry } from "astro:content";
 import { getPath } from "@/utils/getPath";
+import { getPreferenceEmoji } from "@/utils/preference"; // 导入共享函数
 import Datetime from "./Datetime.astro";
 
 export interface Props extends CollectionEntry<"blog"> {
@@ -10,12 +11,18 @@ export interface Props extends CollectionEntry<"blog"> {
 
 const { variant = "h2", data, id, filePath } = Astro.props;
 
-const { title, description, pubDatetime, modDatetime, timezone } = data;
+const { title, description, pubDatetime, modDatetime, timezone, score, preference } = data;
 
 const headerProps = {
   style: { viewTransitionName: slugifyStr(title) },
   class: "text-lg font-medium decoration-dashed hover:underline",
 };
+
+// Format score if it exists (multiply by 100, keep 2 decimal places)
+const formattedScore = score !== undefined ? (score * 100).toFixed(2) : null;
+
+// 使用共享函数获取表情符号
+const preferenceEmoji = getPreferenceEmoji(preference);
 ---
 
 <li class="my-6">
@@ -31,6 +38,14 @@ const headerProps = {
       )
     }
   </a>
-  <Datetime {pubDatetime} {modDatetime} {timezone} />
+  <div class="flex items-center justify-between">
+    <Datetime {pubDatetime} {modDatetime} {timezone} />
+    {(formattedScore || preferenceEmoji) && (
+      <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+        {formattedScore && <span>{formattedScore}</span>}
+        {preferenceEmoji && <span class="text-base">{preferenceEmoji}</span>}
+      </div>
+    )}
+  </div>
   <p>{description}</p>
 </li>

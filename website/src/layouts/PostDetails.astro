@@ -8,8 +8,10 @@ import Datetime from "@/components/Datetime.astro";
 import EditPost from "@/components/EditPost.astro";
 import ShareLinks from "@/components/ShareLinks.astro";
 import BackButton from "@/components/BackButton.astro";
+import Comments from "@/components/Comments"; // 导入 Comments 组件
 import { getPath } from "@/utils/getPath";
 import { slugifyStr } from "@/utils/slugify";
+import { getPreferenceEmoji } from "@/utils/preference"; // 导入共享函数
 import IconChevronLeft from "@/assets/icons/IconChevronLeft.svg";
 import IconChevronRight from "@/assets/icons/IconChevronRight.svg";
 import { SITE } from "@/config";
@@ -32,6 +34,8 @@ const {
   timezone,
   tags,
   hideEditPost,
+  score, // 添加 score 属性
+  preference, // 添加 preference 属性
 } = post.data;
 
 const { Content } = await render(post);
@@ -78,6 +82,12 @@ const currentPostIndex = allPosts.findIndex(a => a.slug === post.id);
 const prevPost = currentPostIndex !== 0 ? allPosts[currentPostIndex - 1] : null;
 const nextPost =
   currentPostIndex !== allPosts.length ? allPosts[currentPostIndex + 1] : null;
+
+// 格式化分数（乘以 100，保留两位小数）
+const formattedScore = score !== undefined ? (score * 100).toFixed(2) : null;
+
+// 使用共享函数获取表情符号
+const preferenceEmoji = getPreferenceEmoji(preference);
 ---
 
 <Layout {...layoutProps}>
@@ -97,9 +107,17 @@ const nextPost =
     >
       {title}
     </h1>
-    <div class="flex items-center gap-4">
-      <Datetime {pubDatetime} {modDatetime} {timezone} size="lg" class="my-2" />
-      <EditPost class="max-sm:hidden" {hideEditPost} {post} />
+    <div class="flex items-center justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <Datetime {pubDatetime} {modDatetime} {timezone} size="lg" class="my-2" />
+        <EditPost class="max-sm:hidden" {hideEditPost} {post} />
+      </div>
+      {(formattedScore || preferenceEmoji) && (
+        <div class="flex items-center gap-2 text-lg text-gray-500 dark:text-gray-400">
+          {formattedScore && <span>{formattedScore}</span>}
+          {preferenceEmoji && <span class="text-xl">{preferenceEmoji}</span>}
+        </div>
+      )}
     </div>
     <article id="article" class="mx-auto prose mt-8 max-w-3xl">
       <Content />
@@ -160,6 +178,16 @@ const nextPost =
         )
       }
     </div>
+
+    <div class="mt-8 flex flex-col-reverse items-center justify-between sm:flex-row">
+      {!hideEditPost && <EditPost post={post} />}
+      <ShareLinks />
+    </div>
+
+    <!-- 使用 Comments 组件替换 Giscus 脚本标签 -->
+    <Comments client:only="react" />
+
+    <hr class="my-6 border-dashed" />
   </main>
   <Footer />
 </Layout>

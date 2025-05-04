@@ -7,6 +7,7 @@ import IconFacebook from "@/assets/icons/IconFacebook.svg";
 import IconTelegram from "@/assets/icons/IconTelegram.svg";
 import IconPinterest from "@/assets/icons/IconPinterest.svg";
 import { SITE } from "@/config";
+import type { GiscusProps } from "@giscus/react"; // Add this import
 
 export const SOCIALS = [
   {
@@ -73,3 +74,17 @@ export const SHARE_LINKS = [
     icon: IconMail,
   },
 ] as const;
+
+// Add the GISCUS constant with your details
+export const GISCUS: GiscusProps = {
+  repo: "Yikai-Liao/PaperDigest",
+  repoId: "R_kgDOOj034g",
+  category: "Giscus",
+  categoryId: "DIC_kwDOOj034s4Cpv41",
+  mapping: "pathname",
+  reactionsEnabled: "1",
+  emitMetadata: "0",
+  inputPosition: "bottom",
+  lang: "zh-CN",
+  loading: "eager", // 将 lazy 改为 eager
+};

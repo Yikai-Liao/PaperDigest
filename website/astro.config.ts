@@ -7,14 +7,14 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { SITE } from "./src/config";
 
+import react from "@astrojs/react";
+
 // https://astro.build/config
 export default defineConfig({
   site: SITE.website,
-  integrations: [
-    sitemap({
-      filter: page => SITE.showArchives || !page.endsWith("/archives"),
-    }),
-  ],
+  integrations: [sitemap({
+    filter: page => SITE.showArchives || !page.endsWith("/archives"),
+  }), react()],
   markdown: {
     remarkPlugins: [remarkToc, [remarkCollapse, { test: "Table of contents" }], remarkMath],
     rehypePlugins: [rehypeKatex],
@@ -33,11 +33,11 @@ export default defineConfig({
   image: {
     // Used for all Markdown images; not configurable per-image
     // Used for all `<Image />` and `<Picture />` components unless overridden with a prop
-    experimentalLayout: "responsive",
+    experimentalLayout: "constrained",
   },
   experimental: {
-    svg: true,
+    // svg: true,
     responsiveImages: true,
-    preserveScriptOrder: true,
+    // preserveScriptOrder: true,
   },
 });
