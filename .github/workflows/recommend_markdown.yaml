@@ -6,7 +6,7 @@ on:
       matrix_count:
         description: '并行处理任务数量'
         required: true
-        default: '4'
+        default: 4
         type: number
 
 jobs:

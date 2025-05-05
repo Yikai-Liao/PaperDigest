@@ -4,6 +4,6 @@
       "main": false
     }
   },
-  "buildCommand": false,
+  "buildCommand": null,
   "outputDirectory": "dist"
 }

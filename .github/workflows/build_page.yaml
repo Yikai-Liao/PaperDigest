@@ -6,6 +6,12 @@ on:
     branches:
       - main
   workflow_dispatch:
+  workflow_run:
+    workflows: ["Daily Discussion Check"]
+    types:
+      - completed
+    branches:
+      - main
 
 jobs:
   build:
@@ -42,7 +48,7 @@ jobs:
         with:
             node-version: 22
             cache: 'pnpm'
-            cache-dependency-path: website/pnpm-lock.yaml
+            cache-dependency-path: 'website/pnpm-lock.yaml'
 
       - name: Build Astro Static Page
         run: |
