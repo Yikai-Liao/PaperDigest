@@ -5,5 +5,5 @@
     }
   },
   "buildCommand": null,
-  "outputDirectory": "dist"
+  "outputDirectory": "website/dist"
 }
