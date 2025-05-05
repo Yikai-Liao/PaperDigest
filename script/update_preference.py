@@ -38,7 +38,7 @@ def main(discussions_path, repo_owner):
     content_repo = config["content_repo"]
     data_link = f"hf://datasets/{content_repo}/main.parquet"
     raw_content = pl.read_parquet(data_link)
-    id_set = set(raw_content.select("id").to_list())
+    id_set = set(pl.Series(raw_content.select('id')).to_list())
     print(f"当前数据集中包含 {len(id_set)} 个arxiv ID")
     with open(discussions_path, "r", encoding="utf-8") as f:
         data = json.load(f)
