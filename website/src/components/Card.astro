@@ -2,8 +2,9 @@
 import { slugifyStr } from "@/utils/slugify";
 import type { CollectionEntry } from "astro:content";
 import { getPath } from "@/utils/getPath";
-import { getPreferenceEmoji, SCORE_COLORS, SCORE_THRESHOLDS } from "@/utils/preference"; // 导入颜色常量
+import { getPreferenceEmoji } from "@/utils/preference";
 import Datetime from "./Datetime.astro";
+import TransitionWrapper from "./TransitionWrapper.astro";
 
 export interface Props extends CollectionEntry<"blog"> {
   variant?: "h2" | "h3";
@@ -12,11 +13,6 @@ export interface Props extends CollectionEntry<"blog"> {
 const { variant = "h2", data, id, filePath } = Astro.props;
 
 const { title, description, pubDatetime, modDatetime, timezone, score, preference } = data;
-
-const headerProps = {
-  style: { viewTransitionName: slugifyStr(title) },
-  class: "text-lg font-medium decoration-dashed hover:underline",
-};
 
 // Format score if it exists (multiply by 100, keep 2 decimal places)
 const formattedScore = score !== undefined ? (score * 100).toFixed(2) : null;
@@ -33,13 +29,15 @@ const arxivUrl = `https://arxiv.org/abs/${id}`;
     href={getPath(id, filePath)}
     class="inline-block text-lg font-medium text-accent decoration-dashed underline-offset-4 focus-visible:no-underline focus-visible:underline-offset-0"
   >
-    {
-      variant === "h2" ? (
-        <h2 {...headerProps}>{title}</h2>
-      ) : (
-        <h3 {...headerProps}>{title}</h3>
-      )
-    }
+    <TransitionWrapper name={slugifyStr(title)} type="fade" customClass="text-lg font-medium decoration-dashed hover:underline">
+      {
+        variant === "h2" ? (
+          <h2>{title}</h2>
+        ) : (
+          <h3>{title}</h3>
+        )
+      }
+    </TransitionWrapper>
   </a>
   <div class="flex items-center justify-between">
     <div class="flex items-center gap-2">
@@ -59,39 +57,3 @@ const arxivUrl = `https://arxiv.org/abs/${id}`;
   </div>
   <p>{description}</p>
 </li>
-
-<script define:vars={{ SCORE_COLORS, SCORE_THRESHOLDS }}>
-  // 监听主题变化，更新分数颜色
-  document.addEventListener('astro:page-load', () => {
-    function updateScoreColors() {
-      const isDarkTheme = document.documentElement.classList.contains('dark');
-      document.querySelectorAll('.score-value').forEach(el => {
-        const scoreText = el.textContent;
-        if (scoreText) {
-          const score = parseFloat(scoreText) / 100; // 转换回0-1范围
-          
-          // 根据分数和当前主题设置颜色
-          const theme = isDarkTheme ? SCORE_COLORS.dark : SCORE_COLORS.light;
-          
-          if (score < SCORE_THRESHOLDS.low) {
-            el.style.color = theme.low;
-          } else if (score < SCORE_THRESHOLDS.high) {
-            el.style.color = theme.medium;
-          } else {
-            el.style.color = theme.high;
-          }
-        }
-      });
-    }
-
-    // 初始更新颜色
-    updateScoreColors();
-
-    // 监听主题变化
-    const themeBtn = document.querySelector('#theme-btn');
-    themeBtn?.addEventListener('click', () => {
-      // 延迟执行，等待主题切换完成
-      setTimeout(updateScoreColors, 0);
-    });
-  });
-</script>

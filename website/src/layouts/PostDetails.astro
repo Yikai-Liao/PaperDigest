@@ -7,11 +7,11 @@ import Tag from "@/components/Tag.astro";
 import Datetime from "@/components/Datetime.astro";
 import EditPost from "@/components/EditPost.astro";
 import ShareLinks from "@/components/ShareLinks.astro";
-import LinkButton from "@/components/LinkButton.astro"; // 添加 LinkButton 导入
-import Comments from "@/components/Comments"; // 导入 Comments 组件
+import LinkButton from "@/components/LinkButton.astro";
+import Comments from "@/components/Comments";
 import { getPath } from "@/utils/getPath";
 import { slugifyStr } from "@/utils/slugify";
-import { getPreferenceEmoji, SCORE_COLORS, SCORE_THRESHOLDS } from "@/utils/preference"; // 导入颜色常量
+import { getPreferenceEmoji, SCORE_COLORS, SCORE_THRESHOLDS } from "@/utils/preference";
 import IconChevronLeft from "@/assets/icons/IconChevronLeft.svg";
 import IconChevronRight from "@/assets/icons/IconChevronRight.svg";
 import { SITE } from "@/config";
@@ -34,8 +34,8 @@ const {
   timezone,
   tags,
   hideEditPost,
-  score, // 添加 score 属性
-  preference, // 添加 preference 属性
+  score,
+  preference,
 } = post.data;
 
 // 从文章ID中提取arXiv ID
@@ -212,160 +212,19 @@ const preferenceEmoji = getPreferenceEmoji(preference);
   <Footer />
 </Layout>
 
-<script is:inline data-astro-rerun>
-  /** Create a progress indicator
-   *  at the top */
-  function createProgressBar() {
-    // Create the main container div
-    const progressContainer = document.createElement("div");
-    progressContainer.className =
-      "progress-container fixed top-0 z-10 h-1 w-full bg-background";
+<!-- 使用全局 site.js 中的功能而不是内联脚本 -->
+<!-- 
+原来的内联脚本已移至site.js中的setupPostDetailsPage函数
+以下为删除的功能:
+1. createProgressBar() - 现在由site.js处理
+2. updateScrollProgress() - 现在由site.js处理
+3. addHeadingLinks() - 现在由site.js处理
+4. attachCopyButtons() - 现在由site.js处理
+5. backToTop() - 现在由site.js处理
+-->
 
-    // Create the progress bar div
-    const progressBar = document.createElement("div");
-    progressBar.className = "progress-bar h-1 w-0 bg-accent";
-    progressBar.id = "myBar";
-
-    // Append the progress bar to the progress container
-    progressContainer.appendChild(progressBar);
-
-    // Append the progress container to the document body or any other desired parent element
-    document.body.appendChild(progressContainer);
-  }
-  createProgressBar();
-
-  /** Update the progress bar
-   *  when user scrolls */
-  function updateScrollProgress() {
-    document.addEventListener("scroll", () => {
-      const winScroll =
-        document.body.scrollTop || document.documentElement.scrollTop;
-      const height =
-        document.documentElement.scrollHeight -
-        document.documentElement.clientHeight;
-      const scrolled = (winScroll / height) * 100;
-      if (document) {
-        const myBar = document.getElementById("myBar");
-        if (myBar) {
-          myBar.style.width = scrolled + "%";
-        }
-      }
-    });
-  }
-  updateScrollProgress();
-
-  /** Attaches links to headings in the document,
-   *  allowing sharing of sections easily */
-  function addHeadingLinks() {
-    const headings = Array.from(
-      document.querySelectorAll("h2, h3, h4, h5, h6")
-    );
-    for (const heading of headings) {
-      heading.classList.add("group");
-      const link = document.createElement("a");
-      link.className =
-        "heading-link ml-2 opacity-0 group-hover:opacity-100 focus:opacity-100";
-      link.href = "#" + heading.id;
-
-      const span = document.createElement("span");
-      span.ariaHidden = "true";
-      span.innerText = "#";
-      link.appendChild(span);
-      heading.appendChild(link);
-    }
-  }
-  addHeadingLinks();
-
-  /** Attaches copy buttons to code blocks in the document,
-   * allowing users to copy code easily. */
-  function attachCopyButtons() {
-    const copyButtonLabel = "Copy";
-    const codeBlocks = Array.from(document.querySelectorAll("pre"));
-
-    for (const codeBlock of codeBlocks) {
-      const wrapper = document.createElement("div");
-      wrapper.style.position = "relative";
-
-      const copyButton = document.createElement("button");
-      copyButton.className =
-        "copy-code absolute right-3 -top-3 rounded bg-muted px-2 py-1 text-xs leading-4 text-foreground font-medium";
-      copyButton.innerHTML = copyButtonLabel;
-      codeBlock.setAttribute("tabindex", "0");
-      codeBlock.appendChild(copyButton);
-
-      // wrap codebock with relative parent element
-      codeBlock?.parentNode?.insertBefore(wrapper, codeBlock);
-      wrapper.appendChild(codeBlock);
-
-      copyButton.addEventListener("click", async () => {
-        await copyCode(codeBlock, copyButton);
-      });
-    }
-
-    async function copyCode(block, button) {
-      const code = block.querySelector("code");
-      const text = code?.innerText;
-
-      await navigator.clipboard.writeText(text ?? "");
-
-      // visual feedback that task is completed
-      button.innerText = "Copied";
-
-      setTimeout(() => {
-        button.innerText = copyButtonLabel;
-      }, 700);
-    }
-  }
-  attachCopyButtons();
-
-  /** Scrolls the document to the top when
-   * the "Back to Top" button is clicked. */
-  function backToTop() {
-    document.querySelector("#back-to-top")?.addEventListener("click", () => {
-      document.body.scrollTop = 0; // For Safari
-      document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
-    });
-  }
-  backToTop();
-
-  /* Go to page start after page swap */
-  document.addEventListener("astro:after-swap", () =>
-    window.scrollTo({ left: 0, top: 0, behavior: "instant" })
-  );
-</script>
-
-<script define:vars={{ SCORE_COLORS, SCORE_THRESHOLDS }}>
-  // 监听主题变化，更新分数颜色
+<script is:inline define:vars={{ SCORE_COLORS, SCORE_THRESHOLDS }}>
   document.addEventListener('astro:page-load', () => {
-    function updateScoreColors() {
-      const isDarkTheme = document.documentElement.classList.contains('dark');
-      document.querySelectorAll('.score-value').forEach(el => {
-        const scoreText = el.textContent;
-        if (scoreText) {
-          const score = parseFloat(scoreText) / 100; // 转换回0-1范围
-          
-          // 根据分数和当前主题设置颜色
-          const theme = isDarkTheme ? SCORE_COLORS.dark : SCORE_COLORS.light;
-          
-          if (score < SCORE_THRESHOLDS.low) {
-            el.style.color = theme.low;
-          } else if (score < SCORE_THRESHOLDS.high) {
-            el.style.color = theme.medium;
-          } else {
-            el.style.color = theme.high;
-          }
-        }
-      });
-    }
-
-    // 初始更新颜色
     updateScoreColors();
-
-    // 监听主题变化
-    const themeBtn = document.querySelector('#theme-btn');
-    themeBtn?.addEventListener('click', () => {
-      // 延迟执行，等待主题切换完成
-      setTimeout(updateScoreColors, 0);
-    });
   });
 </script>

@@ -1,0 +1,75 @@
+---
+import { slugifyStr } from "@/utils/slugify";
+
+export interface Props {
+  heading: string;
+  level: 1 | 2 | 3 | 4 | 5 | 6;
+  className?: string;
+  withTransition?: boolean;
+}
+
+const { heading, level = 1, className = "", withTransition = true } = Astro.props;
+const headingId = slugifyStr(heading);
+
+// 使用原生HTML元素名称而不是变量Tag
+---
+
+{
+  withTransition ? (
+    <div style={`view-transition-name: ${headingId};`}>
+      {level === 1 ? (
+        <h1 id={headingId} class={className}>
+          <slot />{heading}
+        </h1>
+      ) : level === 2 ? (
+        <h2 id={headingId} class={className}>
+          <slot />{heading}
+        </h2>
+      ) : level === 3 ? (
+        <h3 id={headingId} class={className}>
+          <slot />{heading}
+        </h3>
+      ) : level === 4 ? (
+        <h4 id={headingId} class={className}>
+          <slot />{heading}
+        </h4>
+      ) : level === 5 ? (
+        <h5 id={headingId} class={className}>
+          <slot />{heading}
+        </h5>
+      ) : (
+        <h6 id={headingId} class={className}>
+          <slot />{heading}
+        </h6>
+      )}
+    </div>
+  ) : (
+    <>
+      {level === 1 ? (
+        <h1 id={headingId} class={className}>
+          <slot />{heading}
+        </h1>
+      ) : level === 2 ? (
+        <h2 id={headingId} class={className}>
+          <slot />{heading}
+        </h2>
+      ) : level === 3 ? (
+        <h3 id={headingId} class={className}>
+          <slot />{heading}
+        </h3>
+      ) : level === 4 ? (
+        <h4 id={headingId} class={className}>
+          <slot />{heading}
+        </h4>
+      ) : level === 5 ? (
+        <h5 id={headingId} class={className}>
+          <slot />{heading}
+        </h5>
+      ) : (
+        <h6 id={headingId} class={className}>
+          <slot />{heading}
+        </h6>
+      )}
+    </>
+  )
+}

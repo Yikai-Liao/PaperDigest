@@ -1,0 +1,26 @@
+---
+/**
+ * TransitionWrapper 组件
+ * 用于为任何内容提供一致的视图转换效果
+ * 通过使用这个组件，可以避免在每个页面中重复声明相同的视图转换CSS
+ */
+
+export interface Props {
+  name: string;                // 视图转换名称（必须唯一）
+  type?: "fade" | "slide" | "custom"; // 转换类型
+  customClass?: string;        // 自定义类名
+}
+
+const { name, type = "fade", customClass = "" } = Astro.props;
+
+// 创建具有一致命名规则的视图转换名称
+const transitionName = `${type}-${name}`;
+---
+
+<div 
+  data-astro-transition-scope={type === "custom" ? customClass : type}
+  style={`view-transition-name: ${transitionName};`}
+  class={customClass}
+>
+  <slot />
+</div>
