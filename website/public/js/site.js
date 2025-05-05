@@ -13,6 +13,23 @@ const SCORE_COLORS = {
 };
 const SCORE_THRESHOLDS = { "low": 0.3, "high": 0.7 };
 
+// 确保样式应用函数 - 解决Safari视图转换问题
+function ensureStylesApplied() {
+  // 强制浏览器重新计算样式
+  document.body.style.display = 'none';
+  // 必须使用setTimeout，这样才能在DOM更新后执行
+  setTimeout(() => {
+    document.body.style.display = '';
+    
+    // 确保背景颜色正确应用
+    const theme = document.documentElement.getAttribute('data-theme') || 'light';
+    document.documentElement.setAttribute('data-theme', theme);
+    
+    // 确保分数颜色正确应用
+    updateScoreColors();
+  }, 5);
+}
+
 // 菜单开关功能
 function setupMenuToggle() {
   const menuBtn = document.querySelector("#menu-btn");
@@ -206,6 +223,9 @@ document.addEventListener("astro:page-load", () => {
     // 延迟执行，等待主题切换完成
     setTimeout(updateScoreColors, 0);
   });
+  
+  // 确保样式应用
+  ensureStylesApplied();
 });
 
 // 为首次加载也执行一次（不通过 Astro view transitions 加载的页面）
@@ -222,4 +242,15 @@ document.addEventListener("astro:after-swap", () => {
   
   // 确保切换页面后菜单仍然正常工作
   setupMenuToggle();
+  
+  // 针对 Safari 移动版的样式修复
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  
+  if (isSafari || isMobile) {
+    // Safari 移动版需要延迟更长时间确保样式应用
+    setTimeout(ensureStylesApplied, 10);
+  } else {
+    ensureStylesApplied();
+  }
 });
