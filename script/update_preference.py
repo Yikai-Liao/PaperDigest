@@ -93,7 +93,7 @@ def main(discussions_path, repo_owner):
 
     local_path = "temp_main.parquet"
     content.write_parquet(local_path)
-    api = HfApi()
+    api = HfApi(token=os.getenv("HUGGINGFACE_TOKEN"))
     api.upload_file(
         path_or_fileobj=local_path,
         path_in_repo="main.parquet",

@@ -50,6 +50,8 @@ jobs:
 
       - name: 更新偏好文件
         id: update_prefs
+        env:
+          HUGGINGFACE_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
         run: |
           python script/update_preference.py \
             discussions.json \
