@@ -59,11 +59,11 @@ api_key = "env"
 # Replace with your OpenAI-compatible API base URL
 base_url = "https://api.x.ai/v1" 
 # Specify the model to use
-model = "grok-3-latest"
+model = "grok-3-mini-latest"
 # Sampling temperature
-temperature = 0.5
+temperature = 0
 # Top-p nucleus sampling
-top_p = 0.7
+top_p = 0.8
 max_concurrent = 3
-# reasoning_effort = "high"
+reasoning_effort = "high"
 num_workers = 10
