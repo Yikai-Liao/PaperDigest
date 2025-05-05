@@ -85,10 +85,26 @@ def main(discussions_path, repo_owner):
         ids.append(stem)
         prefs.append(pref)
 
+    # 创建包含补丁数据的DataFrame
     patch = pl.DataFrame({"id": ids, "preference": prefs}, schema={"id": pl.Utf8, "preference": pl.Utf8})
     print(f"提取到 {len(patch)} 条偏好数据")
-    # Update the raw_content DataFrame using the patch
-    content = raw_content.join(patch, on="id", how="left")
+    
+    # 更高效的更新方法：使用 update 直接更新匹配的行
+    content = raw_content.join(
+        patch,
+        on="id",
+        how="left",
+        suffix="_new"
+    )
+    
+    # 使用update方法直接更新preference列
+    content = content.with_columns(
+        pl.when(pl.col("preference_new").is_not_null())
+        .then(pl.col("preference_new"))
+        .otherwise(pl.col("preference"))
+        .alias("preference")
+    ).drop("preference_new")
+    
     # upload the content back to huggingface
 
     local_path = "temp_main.parquet"
