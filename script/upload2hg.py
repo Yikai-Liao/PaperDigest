@@ -42,14 +42,13 @@ if __name__ == "__main__":
     else:
         # Read the remote parquet file
         remote_df = pl.read_parquet(remote_file_path)
-        
+    
     # Read the local parquet file
     print(f"Reading local parquet file from {local_parquet_path}...")
     local_df = pl.read_parquet(local_parquet_path)
     
     print(f"Local dataframe shape: {local_df.shape}")
     print(f"Remote dataframe shape: {remote_df.shape}")
-    
     # Merge the two dataframes
     if 'id' not in local_df.columns:
         raise ValueError("Local dataframe must have an 'id' column")
@@ -58,6 +57,8 @@ if __name__ == "__main__":
         # 使用纯polars实现combine_first的效果
         # 1. 首先执行外连接（保留所有id）
         # 2. 对于冲突的列，优先使用local_df的值
+        remote_df = remote_df.lazy()
+        local_df = local_df.lazy()
         
         # 获取两个数据框的所有列名（不包括id）
         local_cols = set(local_df.columns) - {'id'}
@@ -81,8 +82,9 @@ if __name__ == "__main__":
         )
         
         # 处理共有列，优先使用local_df的值
-        select_exprs = [pl.col("id")]
-        
+        # 修改这里，确保id列不会丢失，使用coalesce合并原始id和远程id
+        select_exprs = [pl.coalesce(pl.col("id"), pl.col("id_remote")).alias("id")]
+
         # 对于共有列，使用local_df的值，如果为空则使用remote_df的值
         for col in common_cols:
             select_exprs.append(
@@ -103,30 +105,30 @@ if __name__ == "__main__":
         
         # 应用选择表达式
         merged_df = merged_df.select(select_exprs)
+        merged_df = merged_df.collect()
         
         print(f"Merged dataframe shape: {merged_df.shape}")
     else:
         # If remote is empty, just use local
         merged_df = local_df
         print("Using local dataframe as the remote dataframe is empty.")
-    
     # Save the merged dataframe to a temporary file
     temp_output_path = "merged_temp.parquet"
     print(f"Saving merged dataframe to {temp_output_path}...")
     merged_df.write_parquet(temp_output_path)
     
     # Upload the merged dataframe to huggingface hub
-    print(f"Uploading to {repo_id}/{remote_parquet_path}...")
-    hfh.upload_file(
-        path_or_fileobj=temp_output_path,
-        path_in_repo=remote_parquet_path,
-        repo_id=repo_id,
-        token=hf_token,
-        repo_type="dataset"
-    )
+    # print(f"Uploading to {repo_id}/{remote_parquet_path}...")
+    # hfh.upload_file(
+    #     path_or_fileobj=temp_output_path,
+    #     path_in_repo=remote_parquet_path,
+    #     repo_id=repo_id,
+    #     token=hf_token,
+    #     repo_type="dataset"
+    # )
     
-    # Clean up temporary file
-    os.remove(temp_output_path)
-    print(f"Successfully uploaded merged data to {repo_id}/{remote_parquet_path}")
-    print(f"Original shapes - Local: {local_df.shape}, Remote: {remote_df.shape}, Merged: {merged_df.shape}")
+    # # Clean up temporary file
+    # os.remove(temp_output_path)
+    # print(f"Successfully uploaded merged data to {repo_id}/{remote_parquet_path}")
+    # print(f"Original shapes - Local: {local_df.shape}, Remote: {remote_df.shape}, Merged: {merged_df.shape}")
 
