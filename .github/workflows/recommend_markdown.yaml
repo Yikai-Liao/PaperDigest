@@ -261,6 +261,7 @@ jobs:
           
           # 找到所有 .json 文件并复制到 merged_jsons/
           find all_artifacts -name "*.json" -type f -exec cp {} merged_jsons/ \;
+          rm -rf merged_jsons/**/*_meta.json
           
           # 检查合并的文件数量
           total_json=$(find merged_jsons -name "*.json" | wc -l)
