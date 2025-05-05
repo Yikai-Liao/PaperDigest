@@ -260,3 +260,24 @@ jobs:
           name: merged-jsons
           path: merged_jsons/
           retention-days: 7
+
+      - name: 合并 JSON 文件到 Parquet
+        run: |
+          python script/json2parquet.py merged_jsons main.parquet
+
+      - name: 上传合并后的 Parquet 文件
+        uses: actions/upload-artifact@v4
+        with:
+          name: merged-parquet
+          path: main.parquet
+          retention-days: 7
+      
+      - name: 上传 Parquet 到 Hugging Face
+        env:
+          HUGGINGFACE_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
+        run: |
+          # 安装必要的库
+          pip install datasets huggingface_hub
+          
+          # 上传到 Hugging Face
+          python script/upload2hg.py main.parquet main.parquet lyk/PaperDigestDataBase 
