@@ -55,10 +55,6 @@ jobs:
             discussions.json \
             "${{ github.repository_owner }}"
 
-      - name: 渲染Markdown
-        run: |
-          python script/render_md.py
-
       - name: 显示本地Git变更情况
         run: git status
 
