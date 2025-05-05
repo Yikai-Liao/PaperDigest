@@ -7,7 +7,7 @@ preference_dir = "./preference"
 raw_data_dir = "./raw"
 # The starting year to select background papers
 background_start_year = 2024
-preference_start_year = 2024
+preference_start_year = 2023
 
 # Path to the huggingface dataset with embedding for arxiv papers
 # This is pre computed and stored in the huggingface hub by lyk
@@ -38,11 +38,11 @@ max_iter = 1000
 
 
 [fit_predict.predict]
-last_n_days = 14
+last_n_days = 2
 start_date = "" # YYYY-MM-DD
 end_date = "" # YYYY-MM-DD
 
-high_threshold = 0.9
+high_threshold = 0.85
 boundary_threshold = 0.5
 sample_rate = 0.05
 
@@ -57,11 +57,11 @@ api_key = "env"
 # Replace with your OpenAI-compatible API base URL
 base_url = "https://api.x.ai/v1" 
 # Specify the model to use
-model = "grok-3-mini-latest"
+model = "grok-3-latest"
 # Sampling temperature
 temperature = 0.5
 # Top-p nucleus sampling
 top_p = 0.7
 max_concurrent = 3
-reasoning_effort = "high"
+# reasoning_effort = "high"
 num_workers = 10
