@@ -40,13 +40,13 @@ max_iter = 1000
 
 
 [fit_predict.predict]
-last_n_days = 2
+last_n_days = 7
 start_date = "" # YYYY-MM-DD
 end_date = "" # YYYY-MM-DD
 
 high_threshold = 0.85
 boundary_threshold = 0.5
-sample_rate = 0.02
+sample_rate = 0.01
 
 [download_pdf]
 output_dir = "./pdfs"
