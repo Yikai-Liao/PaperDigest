@@ -177,3 +177,5 @@ predictions
 pdfs
 extracted_mds
 predictions.parquet
+
+# content/**/*.md

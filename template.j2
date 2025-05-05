@@ -1,14 +1,14 @@
 ---
 title: {{ title | tojson }}
 slug: {{ id | tojson }}
-description: {{ one_sentence_summary | tojson }}
+description: "{{ one_sentence_summary | replace('"', '\\"') }}"
 tags: {{ keywords | tojson }}
 author: {{ model | tojson }}
 pubDatetime: {{ summary_time }}
 preference: {{ preference | tojson }}
 score: {{ score | tojson }}
 featured: false
-draft: false
+draft: {{ draft }}
 ---
 
 > {{ one_sentence_summary }}

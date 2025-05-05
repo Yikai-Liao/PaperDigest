@@ -55,7 +55,7 @@ jobs:
             discussions.json \
             "${{ github.repository_owner }}"
 
-      - name: 渲染Markdonw
+      - name: 渲染Markdown
         run: |
           pip install -r requirements.txt
           python script/render_md.py

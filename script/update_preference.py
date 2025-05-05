@@ -9,6 +9,8 @@ from pathlib import Path
 import re
 from collections import defaultdict
 import argparse
+import toml
+from huggingface_hub import HfApi
 
 def build_json_index(json_root: Path):
     return {json_file.stem: json_file for json_file in json_root.glob("**/*.json")}
@@ -21,7 +23,7 @@ reaction2int = defaultdict(lambda: 3, {
 })
 int2pref = ["like", "dislike", "neutral", "unknown"]
 
-
+REPO_DIR = Path(__file__).resolve().parent.parent
 
 def main(discussions_path, repo_owner):
     """
@@ -31,10 +33,14 @@ def main(discussions_path, repo_owner):
         discussions_path: 讨论数据JSON文件路径
         repo_owner: 仓库所有者
     """
-    json_idx = build_json_index(Path("raw"))
-    print(json_idx)
 
-    with open(discussions_path, "r") as f:
+    config = toml.load(REPO_DIR / "config.toml")
+    content_repo = config["content_repo"]
+    data_link = f"hf://datasets/{content_repo}/main.parquet"
+    raw_content = pl.read_parquet(data_link)
+    id_set = set(raw_content.select("id").to_list())
+    print(f"当前数据集中包含 {len(id_set)} 个arxiv ID")
+    with open(discussions_path, "r", encoding="utf-8") as f:
         data = json.load(f)
     
     # 提取讨论节点
@@ -61,9 +67,8 @@ def main(discussions_path, repo_owner):
         if not m:
             print(f"标题 '{title}' 的stem '{stem}' 不符合arxiv ID格式，跳过")
             continue
-
-        if stem not in json_idx:
-            print(f"标题 '{title}' 的stem '{stem}' 不在raw目录下的JSON文件中，跳过")
+        if stem not in id_set:
+            print(f"标题 '{title}' 的stem '{stem}' 不在当前数据集中，跳过")
             continue
 
         reactions = [
@@ -75,21 +80,28 @@ def main(discussions_path, repo_owner):
         if not reactions:
             print(f"标题 '{title}' 没有找到用户 '{repo_owner}' 的反应，跳过")
             continue
-        
-        pref = int2pref[min(reactions)]
-        
-        # 更新raw目录下的JSON文件
-        with open(json_idx[stem].resolve(), "r", encoding="utf-8") as f:
-            json_data = json.load(f)
-        json_data["preference"] = pref
-        # Write back to the JSON file
-        with open(json_idx[stem].resolve(), "w", encoding="utf-8") as f:
-            json.dump(json_data, f, indent=4, ensure_ascii=False)
 
+        pref = int2pref[min(reactions)]
         ids.append(stem)
         prefs.append(pref)
 
     patch = pl.DataFrame({"id": ids, "preference": prefs}, schema={"id": pl.Utf8, "preference": pl.Utf8})
+    print(f"提取到 {len(patch)} 条偏好数据")
+    # Update the raw_content DataFrame using the patch
+    content = raw_content.join(patch, on="id", how="left")
+    # upload the content back to huggingface
+
+    local_path = "temp_main.parquet"
+    content.write_parquet(local_path)
+    api = HfApi()
+    api.upload_file(
+        path_or_fileobj=local_path,
+        path_in_repo="main.parquet",
+        repo_id=content_repo,
+        repo_type="dataset"
+    )
+    # remove the local file
+    os.remove(local_path)
 
     # YYYY-MM.csv from now
     csv_path = Path("preference") / f"{datetime.now().strftime('%Y-%m')}.csv"
@@ -106,12 +118,6 @@ def main(discussions_path, repo_owner):
         print(f"文件 {csv_path} 已更新，包含 {len(combined_data)} 行数据")
 
 if __name__ == "__main__":
-    # 用法: python update_preference_from_discussion.py discussions.json repo_owner since_iso yearmonth
-    # if len(sys.argv) == 3:
-    #     print("用法: python update_preference_from_discussion.py <discussions.json> <repo_owner>")
-    #     sys.exit(1)
-    # main(*sys.argv[1:3])
-
     parser = argparse.ArgumentParser(description="从讨论数据中提取反应并更新偏好文件")
     parser.add_argument("discussions_path", type=str, help="讨论数据JSON文件路径")
     parser.add_argument("repo_owner", type=str, help="仓库所有者")
