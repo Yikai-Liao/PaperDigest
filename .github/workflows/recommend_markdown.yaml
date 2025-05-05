@@ -301,3 +301,16 @@ jobs:
         run: |
           # 上传到 Hugging Face
           python script/upload2hg.py main.parquet main.parquet lyk/PaperDigestDataBase
+
+  trigger_build:
+    name: 触发构建Workflow
+    runs-on: ubuntu-latest
+    needs: merge_results
+    permissions: write-all
+    steps:
+      - name: 触发构建Workflow
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: build_page.yaml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: main
