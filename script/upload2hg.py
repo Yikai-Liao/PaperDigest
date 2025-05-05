@@ -46,7 +46,8 @@ if __name__ == "__main__":
     # Read the local parquet file
     print(f"Reading local parquet file from {local_parquet_path}...")
     local_df = pl.read_parquet(local_parquet_path)
-    
+    local_shape = local_df.shape
+    remote_shape = remote_df.shape
     print(f"Local dataframe shape: {local_df.shape}")
     print(f"Remote dataframe shape: {remote_df.shape}")
     # Merge the two dataframes
@@ -118,17 +119,17 @@ if __name__ == "__main__":
     merged_df.write_parquet(temp_output_path)
     
     # Upload the merged dataframe to huggingface hub
-    # print(f"Uploading to {repo_id}/{remote_parquet_path}...")
-    # hfh.upload_file(
-    #     path_or_fileobj=temp_output_path,
-    #     path_in_repo=remote_parquet_path,
-    #     repo_id=repo_id,
-    #     token=hf_token,
-    #     repo_type="dataset"
-    # )
+    print(f"Uploading to {repo_id}/{remote_parquet_path}...")
+    hfh.upload_file(
+        path_or_fileobj=temp_output_path,
+        path_in_repo=remote_parquet_path,
+        repo_id=repo_id,
+        token=hf_token,
+        repo_type="dataset"
+    )
     
-    # # Clean up temporary file
-    # os.remove(temp_output_path)
-    # print(f"Successfully uploaded merged data to {repo_id}/{remote_parquet_path}")
-    # print(f"Original shapes - Local: {local_df.shape}, Remote: {remote_df.shape}, Merged: {merged_df.shape}")
+    # Clean up temporary file
+    os.remove(temp_output_path)
+    print(f"Successfully uploaded merged data to {repo_id}/{remote_parquet_path}")
+    print(f"Original shapes - Local: {local_shape}, Remote: {remote_shape}, Merged: {merged_df.shape}")
 
