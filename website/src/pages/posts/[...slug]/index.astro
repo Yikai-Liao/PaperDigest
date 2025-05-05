@@ -24,6 +24,4 @@ const posts = await getCollection("blog");
 const sortedPosts = getSortedPosts(posts);
 ---
 
-<PostDetails post={post} posts={sortedPosts}>
-  <post.Content />
-</PostDetails>
+<PostDetails post={post} posts={sortedPosts} />
