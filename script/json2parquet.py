@@ -15,8 +15,8 @@ def json2parquet(json_dir, parquet_path):
     # 读取所有JSON文件
     for file_path in json_files:
         # 检查文件名是否符合 ArXiv ID 的格式
-        if not re.match(r"^\d{4}\.\d{4,5}v\d+\.json$", file_path.name):
-            print(f"跳过不符合格式的文件: {file_path.name}")
+        if file_path.stem.endswith("meta"):
+            # 过滤掉以 "meta" 结尾的文件
             continue
         try:
             # 读取单个JSON文件
