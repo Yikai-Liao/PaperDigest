@@ -93,9 +93,13 @@ if __name__ == "__main__":
         for col in local_only_cols:
             select_exprs.append(pl.col(col))
         
-        # 添加remote_df独有的列
+        # 添加remote_df独有的列 - 修复此处逻辑，不要添加_remote后缀
         for col in remote_only_cols:
-            select_exprs.append(pl.col(f"{col}_remote").alias(col))
+            if f"{col}_remote" in merged_df.columns:
+                select_exprs.append(pl.col(f"{col}_remote").alias(col))
+            else:
+                # 如果列不带后缀存在，则直接使用
+                select_exprs.append(pl.col(col))
         
         # 应用选择表达式
         merged_df = merged_df.select(select_exprs)
