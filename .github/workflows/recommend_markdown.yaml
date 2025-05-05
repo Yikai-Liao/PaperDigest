@@ -157,7 +157,7 @@ jobs:
           path: pdf_batches
 
       - name: 缓存 Hugging Face 模型
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: huggingface-cache
         with:
           path: ~/.cache/huggingface
@@ -254,7 +254,7 @@ jobs:
           echo "成功合并了 $total_json 个 JSON 文件"
 
       - name: 下载预测结果
-        uses: actions.download-artifact@v4
+        uses: actions/download-artifact@v4
         with:
           name: predictions
 
