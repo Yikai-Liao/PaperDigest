@@ -32,7 +32,7 @@ if __name__ == "__main__":
         content['draft'] = 'true' if content.get('preference') == 'dislike' else 'false'
         # Get the output path by replacing the raw directory with the output directory
         arxiv_id = content["id"]
-        output_path = OUTPUT_DIR / f"{arxiv_id[:2]}/{arxiv_id}.md"
+        output_path = OUTPUT_DIR / f"{arxiv_id}.md"
         # Create the output directory if it doesn't exist
         # Use os.makedirs for potentially nested directories
         output_path.parent.mkdir(parents=True, exist_ok=True) # Use pathlib's mkdir
