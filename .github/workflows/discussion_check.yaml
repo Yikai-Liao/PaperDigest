@@ -23,7 +23,7 @@ jobs:
           python-version: '3.10'
 
       - name: 安装依赖
-        run: pip install polars requests
+        run: pip install -r requirements.txt
 
       - name: 获取日期信息
         id: date
@@ -57,7 +57,6 @@ jobs:
 
       - name: 渲染Markdown
         run: |
-          pip install -r requirements.txt
           python script/render_md.py
 
       - name: 显示本地Git变更情况
