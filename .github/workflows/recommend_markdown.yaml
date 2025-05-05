@@ -209,7 +209,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ai-summary-${{ matrix.batch }}
-          path: ./extracted_mds/*.json
+          path: ./extracted_mds/**/*.json
           
 
   merge_results:
