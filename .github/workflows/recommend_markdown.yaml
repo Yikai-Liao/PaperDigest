@@ -163,7 +163,7 @@ jobs:
         uses: actions/cache@v4
         id: huggingface-cache
         with:
-          path: ~/.cache/huggingface
+          path: /home/runner/.cache/huggingface
           key: ${{ runner.os }}-huggingface-marker
 
       - name: 安装 marker-pdf
