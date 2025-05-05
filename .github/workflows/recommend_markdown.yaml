@@ -156,6 +156,13 @@ jobs:
           name: pdf-batches
           path: pdf_batches
 
+      - name: 缓存 Hugging Face 模型
+        uses: actions/cache@v3
+        id: huggingface-cache
+        with:
+          path: ~/.cache/huggingface
+          key: ${{ runner.os }}-huggingface-marker
+
       - name: 安装 marker-pdf
         run: pip install marker-pdf
 
@@ -247,7 +254,7 @@ jobs:
           echo "成功合并了 $total_json 个 JSON 文件"
 
       - name: 下载预测结果
-        uses: actions/download-artifact@v4
+        uses: actions.download-artifact@v4
         with:
           name: predictions
 
@@ -282,4 +289,4 @@ jobs:
           pip install datasets huggingface_hub
           
           # 上传到 Hugging Face
-          python script/upload2hg.py main.parquet main.parquet lyk/PaperDigestDataBase 
+          python script/upload2hg.py main.parquet main.parquet lyk/PaperDigestDataBase
