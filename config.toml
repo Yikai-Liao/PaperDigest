@@ -57,13 +57,14 @@ max_retry = 3
 # Replace with your actual API key if needed, or leave empty if using environment variables
 api_key = "env" 
 # Replace with your OpenAI-compatible API base URL
-base_url = "https://api.x.ai/v1" 
+# base_url = "https://api.x.ai/v1" 
+base_url = "https://generativelanguage.googleapis.com/v1beta/openai/"
 # Specify the model to use
-model = "grok-3-mini-latest"
+model = "gemini-2.5-flash-preview-04-17"
 # Sampling temperature
 temperature = 0
 # Top-p nucleus sampling
 top_p = 0.8
-max_concurrent = 3
+max_concurrent = 1 
 reasoning_effort = "high"
-num_workers = 10
+num_workers = 1
