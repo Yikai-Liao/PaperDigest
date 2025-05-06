@@ -72,7 +72,7 @@ class PaperSummary(BaseModel):
     further_thoughts: str = Field(description="Any kind of further thoughts, but it should be deep and insightful. It could be diverse, and related to other areas or articles, but you need to find the relation and make it insightful.")
 
 
-def summarize(paper_path: Path, example: str, api_key: str, base_url: str, model: str, temperature: float, top_p: float, reasoning_effort: str, lang: str) -> dict:
+def summarize(paper_path: Path, example: str, api_key: str, base_url: str, model: str, temperature: float, top_p: float, reasoning_effort: str, lang: str, keywords: list[str]) -> dict:
     paper = paper_path.read_text(encoding='utf-8')
     paper = paper.split("# Reference")[0] # 只保留正文部分
     client = OpenAI(
@@ -90,7 +90,8 @@ def summarize(paper_path: Path, example: str, api_key: str, base_url: str, model
     What specific methods were used (method)? How was the experimental effect (for example, whether the method improvement is obvious, whether the experimental setup is comprehensive and reasonable) (experiment)? 
     What inspirational ideas in the paper are worth your special attention (inspired_idea)? 
     Finally, please summarize the main contributions of the paper in the most concise sentence (one_sentence_summary).
-    Please also provide a list of keywords that are most relevant to the paper (keywords).
+    Please also provide a list of keywords that are most relevant to the paper (keywords). For the keywords, please use some combinations of multiple basic keywords, such as 'Multi Agent', 'Reasoning', not 'Multi Agent Reasong' or 'Join Reasonig'. Dont't use model name, dataset name as keywords.
+    Here is an comprehensive potential keywords list: {keywords}. Please use the existing keywords first, and if you can't find a suitable one, please create a new one following the concept level similar to the existing ones.
     Also, please provide a URL-friendly string that summarizes the title of the research (slug).
     Although I talked to you in English, but you need to make sure that your answer is in {lang}.
     Also, you need to know that, your structured answer will rendered in markdown, so please also use the markdown syntax, especially for latex formula using $...$ or $$...$$.
@@ -144,14 +145,14 @@ def summarize(paper_path: Path, example: str, api_key: str, base_url: str, model
             'summary_time': datetime.datetime.now(datetime.timezone.utc).isoformat()
         }
 
-def summarize_batch(paper_paths: List[Path], example: str, api_key: str, base_url: str, model: str, temperature: float, top_p: float, reasoning_effort: str, lang: str, num_workers: int = 1):
+def summarize_batch(paper_paths: List[Path], example: str, api_key: str, base_url: str, model: str, temperature: float, top_p: float, reasoning_effort: str, lang: str, keywords: list[str], num_workers: int = 1):
     """Summarize a batch of papers using a thread pool."""
     if num_workers > 1:
         with Pool(num_workers) as pool:
-            tasks = [(path, example, api_key, base_url, model, temperature, top_p, reasoning_effort, lang) for path in paper_paths]
+            tasks = [(path, example, api_key, base_url, model, temperature, top_p, reasoning_effort, lang, keywords) for path in paper_paths]
             results = []
             # 修改函数以返回路径和摘要结果的元组
-            def process_paper(p, e, a, b, m, t, tp, r, l):
+            def process_paper(p, e, a, b, m, t, tp, r, l, k):
                 output_path = p.with_suffix('.json')
                 # 检查目标JSON文件是否已存在，如果存在则跳过处理
                 if output_path.exists():
@@ -159,7 +160,7 @@ def summarize_batch(paper_paths: List[Path], example: str, api_key: str, base_ur
                     return None
                 
                 try:
-                    summary = summarize(p, e, a, b, m, t, tp, r, l)
+                    summary = summarize(p, e, a, b, m, t, tp, r, l, k)
                     
                     # 检查是否发生错误
                     if 'error' in summary:
@@ -191,7 +192,7 @@ def summarize_batch(paper_paths: List[Path], example: str, api_key: str, base_ur
                     print(f"Summary already exists at {output_path}, skipping...")
                     continue
                 
-                summary = summarize(path, example, api_key, base_url, model, temperature, top_p, reasoning_effort, lang)
+                summary = summarize(path, example, api_key, base_url, model, temperature, top_p, reasoning_effort, lang, keywords)
                 
                 # 检查是否发生错误
                 if 'error' in summary:
@@ -246,10 +247,13 @@ def main() -> None:
     top_p = config['top_p']
     reasoning_effort = config.get('reasoning_effort', None)
     num_workers = config.get('num_workers', 1)
+    with open(REPO_DIR / "keywords.json", 'r', encoding='utf-8') as f:
+        keywords = json.load(f)
+    print(f"Loaded {len(keywords)} keywords from keywords.json")
     
     print(f"Summarizing {len(paper_path)} papers with {num_workers} workers...")
     # 直接调用summarize_batch，已经在函数内完成了文件保存
-    summarize_batch(paper_path, example, api_key, base_url, model, temperature, top_p, reasoning_effort, lang, num_workers)
+    summarize_batch(paper_path, example, api_key, base_url, model, temperature, top_p, reasoning_effort, lang, keywords, num_workers)
 
 if __name__ == "__main__":
     main()
