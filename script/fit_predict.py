@@ -75,7 +75,7 @@ def load_lazy_dataset(config, preferences: pl.DataFrame):
     categories = config.get("categories", ("cs.AI",))
     logger.debug(f"Categories: {categories}")
 
-    dataset_name = config.get("embedding_dataset", "lyk/ArxivEmbedding")
+    dataset_name = config.get("embedding_dataset", "lyk/PaperDigestDataBase")
     current_year = time.localtime().tm_year
     backgroud_start_year = config.get("background_start_year", 2024)
     preference_start_year = config.get("preference_start_year", 2023)
