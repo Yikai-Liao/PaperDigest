@@ -15,15 +15,14 @@ import tiktoken  # 添加tiktoken库来计算token数量
 
 REPO_DIR = Path(__file__).resolve().parent.parent
 # 定义模型的最大标记限制
-MAX_TOKENS = 120000  # 设置一个安全值，比实际限制131072小一些
+MAX_TOKENS = 22000  # 设置一个安全值，比实际限制131072小一些
 
 def count_tokens(text: str, model: str) -> int:
     """计算文本的token数量"""
     try:
         encoding = tiktoken.encoding_for_model(model)
     except KeyError:
-        # 如果模型不在tiktoken的列表中，使用cl100k_base编码
-        encoding = tiktoken.get_encoding("cl100k_base")
+        encoding = tiktoken.get_encoding("gpt-4o")
     return len(encoding.encode(text))
 
 def truncate_text(text: str, model: str, max_tokens: int) -> str:
@@ -95,14 +94,17 @@ def summarize(paper_path: Path, example: str, api_key: str, base_url: str, model
     # 估算prompt和system message的token数
     system_content = f"{prompt}\n. In the end, please carefully organized your answer into JSON format and take special care to ensure the Escape Character in JSON. When generating JSON, ensure that newlines within string values are represented using the escape character.\nHere is an example, but just for the format, you should give more detailed answer.\n{example}"
     system_tokens = count_tokens(system_content, model)
+    print(f"System message token count: {system_tokens}")
     
     # 为paper内容保留的最大token数 = 最大限制 - system消息token数 - 一些安全余量
     max_paper_tokens = MAX_TOKENS - system_tokens - 2000  # 2000作为安全余量
     
     # 检查并截断paper内容
-    if count_tokens(paper, model) > max_paper_tokens:
+    if token_num := count_tokens(paper, model) > max_paper_tokens:
         print(f"Paper content too long ({count_tokens(paper, model)} tokens), truncating to {max_paper_tokens} tokens")
         paper = truncate_text(paper, model, max_paper_tokens)
+    else:
+        print(f"Paper content within limit ({token_num} tokens), no truncation needed")
     
     try:
         summary = client.beta.chat.completions.parse(
