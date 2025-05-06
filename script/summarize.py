@@ -62,6 +62,7 @@ class PaperSummary(BaseModel):
     # title: str = Field(description="The title of the research. For example: 'Antidistillation Sampling'.")
     # authors: List[str] = Field(description="The authors of the research. For example: ['Yash Savani', 'J. Zico Kolter'].")
     institution: List[str] = Field(description="The institution where the research was conducted. For example: ['Carnegie Mellon University', 'Stanford University', 'University of California, Berkeley'].")
+    reasoning_step: str = Field(description="Just a draft for you to understand this paper and do some further reasoning here. You need to think here, deep dive into the paper and find some interesting things, some problems, some insights, and all the things you think that you need to think. This is a draft, so you can write anything here, but it should be deep and help you to make the following answer better.")
     problem_background: str = Field(description="The motivation, research problem, and background of this research.")
     method: str = Field(description="The method used in this research. Its core idea, how it works, and the main steps.")
     experiment: str = Field(description="The experiment conducted in this research. The dataset used, the experimental setup, why it was conducted and organized like this, and the results, esapecially if the results matches the expectation.")
