@@ -15,7 +15,7 @@ import tiktoken  # 添加tiktoken库来计算token数量
 
 REPO_DIR = Path(__file__).resolve().parent.parent
 # 定义模型的最大标记限制
-MAX_TOKENS = 22000  # 设置一个安全值，比实际限制131072小一些
+MAX_TOKENS = 50000  # 设置一个安全值，比实际限制131072小一些
 
 def count_tokens(text: str, model: str) -> int:
     """计算文本的token数量"""
@@ -74,6 +74,7 @@ class PaperSummary(BaseModel):
 
 def summarize(paper_path: Path, example: str, api_key: str, base_url: str, model: str, temperature: float, top_p: float, reasoning_effort: str, lang: str) -> dict:
     paper = paper_path.read_text(encoding='utf-8')
+    paper = paper.split("# Reference")[0] # 只保留正文部分
     client = OpenAI(
         api_key=api_key,
         base_url=base_url,
