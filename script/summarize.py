@@ -22,7 +22,7 @@ def count_tokens(text: str, model: str) -> int:
     try:
         encoding = tiktoken.encoding_for_model(model)
     except KeyError:
-        encoding = tiktoken.get_encoding("gpt-4o")
+        encoding = tiktoken.get_encoding("cl100k_base")
     return len(encoding.encode(text))
 
 def truncate_text(text: str, model: str, max_tokens: int) -> str:
