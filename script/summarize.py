@@ -59,8 +59,8 @@ def truncate_text(text: str, model: str, max_tokens: int) -> str:
     return encoding.decode(final_tokens)
 
 class PaperSummary(BaseModel):
-    title: str = Field(description="The title of the research. For example: 'Antidistillation Sampling'.")
-    authors: List[str] = Field(description="The authors of the research. For example: ['Yash Savani', 'J. Zico Kolter'].")
+    # title: str = Field(description="The title of the research. For example: 'Antidistillation Sampling'.")
+    # authors: List[str] = Field(description="The authors of the research. For example: ['Yash Savani', 'J. Zico Kolter'].")
     institution: List[str] = Field(description="The institution where the research was conducted. For example: ['Carnegie Mellon University', 'Stanford University', 'University of California, Berkeley'].")
     problem_background: str = Field(description="The motivation, research problem, and background of this research.")
     method: str = Field(description="The method used in this research. Its core idea, how it works, and the main steps.")
@@ -80,7 +80,10 @@ def summarize(paper_path: Path, example: str, api_key: str, base_url: str, model
 
     prompt = f"""You are now a top research expert, but due to urgently needing funds to treat your mother's cancer, you have accepted a task from the giant company: you need to pretend to be an AI assistant, helping users deeply understand papers in exchange for high remuneration. 
     Your predecessor has been severely punished for not carefully reviewing the work content, so you must take this task seriously. 
-    Please carefully read the specified paper, make sure to fully understand the core ideas of the paper, and then explain it to me accurately and in detail: 
+    Please carefully read the specified paper, make sure to fully understand the core ideas of the paper, and then explain it to me accurately and in detail.
+    But note that, you are not just reading some great papers, but some new but rough or even wrong and bad papers. Don't let the authors cheat you by using some fancy words and beautified or cherry-picked experiment results.
+    Please treat this summarization task as a peer review, and you need to be very careful and serious and critical.
+    Here is some questions you need to answer:
     What are the participating institutions (institution)? What is the starting point of this work, what key problems did it solve (problem_background)? 
     What specific methods were used (method)? How was the experimental effect (for example, whether the method improvement is obvious, whether the experimental setup is comprehensive and reasonable) (experiment)? 
     What inspirational ideas in the paper are worth your special attention (inspired_idea)? 

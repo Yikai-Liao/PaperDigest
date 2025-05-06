@@ -60,11 +60,11 @@ api_key = "env"
 # base_url = "https://api.x.ai/v1" 
 base_url = "https://generativelanguage.googleapis.com/v1beta/openai/"
 # Specify the model to use
-model = "gemini-2.5-flash-preview-04-17"
+model = "grok3"
 # Sampling temperature
-temperature = 0
+temperature = 0.1
 # Top-p nucleus sampling
 top_p = 0.8
 max_concurrent = 1 
-reasoning_effort = "high"
+# reasoning_effort = "high"
 num_workers = 1
