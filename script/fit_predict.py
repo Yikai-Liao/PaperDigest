@@ -31,7 +31,10 @@ def load_config():
         sys.exit(1)
     
     with open(config_path, 'r') as f:
-        config = toml.load(f)["fit_predict"]
+        config = toml.load(f)
+        content_repo = config.get("content_repo", "lyk/ArxivEmbedding")
+        config = config["fit_predict"]
+        config["content_repo"] = content_repo
     
     logger.info(f"Config parameters:")
     for key, value in config.items():
@@ -60,13 +63,13 @@ def load_recommended(config) -> pl.DataFrame:
     We need to extract the Arxiv ID from the filename
     and collect all the IDs into a pl.DataFrame
     """
-    raw_dir = REPO_ROOT / config.get("raw_data_dir", "raw")
-    if not raw_dir.exists():
-        return pl.DataFrame(columns=["id"], schema={"id": pl.String})
+    # raw_dir = REPO_ROOT / config.get("raw_data_dir", "raw")
+    # if not raw_dir.exists():
+        # return pl.DataFrame(columns=["id"], schema={"id": pl.String})
+    content_repo = config["content_repo"]
+    recommended = pl.scan_parquet(f"hf://datasets/{content_repo}/main.parquet").collect()
+    return recommended
 
-    recommended = [file.stem for file in raw_dir.glob("**/*.json")]
-    logger.info(f"{len(recommended)} recommended items loaded from {raw_dir}")
-    return pl.DataFrame({"id": recommended}, schema={"id": pl.String})
 
 def load_lazy_dataset(config, preferences: pl.DataFrame):
     categories = config.get("categories", ("cs.AI",))
