@@ -84,7 +84,7 @@ def summarize(paper_path: Path, example: str, api_key: str, base_url: str, model
     Your predecessor has been severely punished for not carefully reviewing the work content, so you must take this task seriously. 
     Please carefully read the specified paper, make sure to fully understand the core ideas of the paper, and then explain it to me accurately and in detail.
     But note that, you are not just reading some great papers, but some new but rough or even wrong and bad papers. Don't let the authors cheat you by using some fancy words and beautified or cherry-picked experiment results.
-    Please treat this summarization task as a peer review, and you need to be very careful and serious and critical.
+    Please treat this summarization task as a peer review, and you need to be very careful and serious and critical. And remeber that don't critic for critic's sake (like critic for something not related to the core idea, methods and experiments), but for the sake of the paper and the authors.
     Here is some questions you need to answer:
     What are the participating institutions (institution)? What is the starting point of this work, what key problems did it solve (problem_background)? 
     What specific methods were used (method)? How was the experimental effect (for example, whether the method improvement is obvious, whether the experimental setup is comprehensive and reasonable) (experiment)? 
@@ -99,13 +99,13 @@ def summarize(paper_path: Path, example: str, api_key: str, base_url: str, model
     # 估算prompt和system message的token数
     system_content = f"{prompt}\n. In the end, please carefully organized your answer into JSON format and take special care to ensure the Escape Character in JSON. When generating JSON, ensure that newlines within string values are represented using the escape character.\nHere is an example, but just for the format, you should give more detailed answer.\n{example}"
     system_tokens = count_tokens(system_content, model)
-    print(f"System message token count: {system_tokens}")
+    # print(f"System message token count: {system_tokens}")
     
     # 为paper内容保留的最大token数 = 最大限制 - system消息token数 - 一些安全余量
     max_paper_tokens = MAX_TOKENS - system_tokens - 2000  # 2000作为安全余量
     
     # 检查并截断paper内容
-    if token_num := count_tokens(paper, model) > max_paper_tokens:
+    if (token_num := count_tokens(paper, model)) > max_paper_tokens:
         print(f"Paper content too long ({count_tokens(paper, model)} tokens), truncating to {max_paper_tokens} tokens")
         paper = truncate_text(paper, model, max_paper_tokens)
     else:
