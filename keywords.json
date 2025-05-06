@@ -52,9 +52,9 @@
       "Tokenization"
     ],
     "Large Models & Foundation Models": [
-      "LLM",
-      "VLM",
-      "Foundation Models",
+    "Large Language Model",
+    "Vision Foundation Model",
+      "Foundation Model",
       "Pre-training",
       "Fine-tuning",
       "Instruction Tuning",

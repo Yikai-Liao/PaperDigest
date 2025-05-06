@@ -92,6 +92,8 @@ def summarize(paper_path: Path, example: str, api_key: str, base_url: str, model
     Finally, please summarize the main contributions of the paper in the most concise sentence (one_sentence_summary).
     Please also provide a list of keywords that are most relevant to the paper (keywords). For the keywords, please use some combinations of multiple basic keywords, such as 'Multi Agent', 'Reasoning', not 'Multi Agent Reasong' or 'Join Reasonig'. Dont't use model name, dataset name as keywords.
     Here is an comprehensive potential keywords list: {keywords}. Please use the existing keywords first, and if you can't find a suitable one, please create a new one following the concept level similar to the existing ones.
+    Do not add more than 6 keywords for 1 paper, always be concise and clear. Rember to use the existing keywords first and be really careful for the abbreviations, do not use abbreviations that are not in the list.
+    
     Also, please provide a URL-friendly string that summarizes the title of the research (slug).
     Although I talked to you in English, but you need to make sure that your answer is in {lang}.
     Also, you need to know that, your structured answer will rendered in markdown, so please also use the markdown syntax, especially for latex formula using $...$ or $$...$$.
