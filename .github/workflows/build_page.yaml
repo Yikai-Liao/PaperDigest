@@ -57,12 +57,11 @@ jobs:
             pnpm run build
 
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: paper-digest
-          directory: website/dist
+          command: pages deploy website/dist --project-name=paper-digest
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Deploy to Github Pages
