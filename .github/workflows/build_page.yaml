@@ -65,13 +65,9 @@ jobs:
           directory: website/dist
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
 
-    #   - name: Deploy to Vercel
-    #     uses: amondnet/vercel-action@v25
-    #     with:
-    #       vercel-token: ${{ secrets.VERCEL_TOKEN }}
-    #       github-token: ${{ secrets.GITHUB_TOKEN }}
-    #       vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-    #       vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-    #       working-directory: website
-    #       vercel-args: '--prod'
+      - name: Deploy to Github Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./website/dist
 

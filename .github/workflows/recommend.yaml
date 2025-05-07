@@ -1,4 +1,4 @@
-name: PDF Processing Pipeline
+name: Paper Recommendation Pipeline
 
 on:
   workflow_dispatch:
