@@ -25,9 +25,9 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-            python-version: '3.10'
-            cache: 'pip'
-            cache-dependency-path: requirements.txt
+          python-version: '3.10'
+          cache: 'pip'
+          cache-dependency-path: requirements.txt
 
       - name: 安装依赖
         run: |
@@ -59,7 +59,14 @@ jobs:
           
           # 获取总 PDF 文件数
           total_files=$(find pdfs -name "*.pdf" | wc -l)
-          matrix_count=${{ github.event.inputs.matrix_count }}
+          
+          # 处理 matrix_count，确保为整数
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            input_matrix_count=${{ github.event.inputs.matrix_count }}
+          else
+            input_matrix_count=4
+          fi
+          matrix_count=$(echo $input_matrix_count | awk '{print int($1)}')
           
           # 确保 matrix_count 不超过文件总数
           if [ $matrix_count -gt $total_files ]; then
@@ -110,7 +117,6 @@ jobs:
           batch_list=$(cat pdf_batches/batch_list.txt | tr '\n' ',' | sed 's/,$//')
           echo "batch_list=$batch_list" >> $GITHUB_OUTPUT
 
-          # 替换为:
           # 创建 JSON 格式的数组
           echo -n "batch_list=[" >> $GITHUB_OUTPUT
           for i in $(seq 1 $total_batches); do
@@ -152,9 +158,9 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-            python-version: '3.10'
-            cache: 'pip'
-            cache-dependency-path: requirements.txt
+          python-version: '3.10'
+          cache: 'pip'
+          cache-dependency-path: requirements.txt
 
       - name: 下载 PDF 批次
         uses: actions/download-artifact@v4
@@ -216,7 +222,6 @@ jobs:
         with:
           name: ai-summary-${{ matrix.batch }}
           path: ./extracted_mds/**/*.json
-          
 
   merge_results:
     name: 合并所有文件
@@ -229,9 +234,9 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-            python-version: '3.10'
-            cache: 'pip'
-            cache-dependency-path: requirements.txt
+          python-version: '3.10'
+          cache: 'pip'
+          cache-dependency-path: requirements.txt
         
       - name: 下载所有 artifact
         uses: actions/download-artifact@v4
