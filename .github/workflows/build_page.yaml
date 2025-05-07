@@ -64,9 +64,12 @@ jobs:
           command: pages deploy website/dist --project-name=paper-digest
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Deploy to Github Pages
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Upload artifact to GitHub Pages
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./website/dist
+          path: ./website/dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
 
