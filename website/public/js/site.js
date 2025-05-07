@@ -15,19 +15,12 @@ const SCORE_THRESHOLDS = { "low": 0.3, "high": 0.7 };
 
 // 确保样式应用函数 - 解决Safari视图转换问题
 function ensureStylesApplied() {
-  // 强制浏览器重新计算样式
-  document.body.style.display = 'none';
-  // 必须使用setTimeout，这样才能在DOM更新后执行
-  setTimeout(() => {
-    document.body.style.display = '';
-    
-    // 确保背景颜色正确应用
-    const theme = document.documentElement.getAttribute('data-theme') || 'light';
-    document.documentElement.setAttribute('data-theme', theme);
-    
-    // 确保分数颜色正确应用
-    updateScoreColors();
-  }, 5);
+  // 移除强制隐藏和显示 body 的逻辑
+  const theme = document.documentElement.getAttribute('data-theme') || 'light';
+  document.documentElement.setAttribute('data-theme', theme);
+
+  // 确保分数颜色正确应用
+  updateScoreColors();
 }
 
 // 菜单开关功能
