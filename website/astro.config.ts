@@ -64,6 +64,17 @@ export default defineConfig({
               },
             },
           },
+          {
+            urlPattern: /\.(?:png|jpg|jpeg|svg|webp|ico)$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'image-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 天
+              },
+            },
+          },
         ],
       },
       devOptions: {
@@ -87,8 +98,8 @@ export default defineConfig({
       exclude: ["@resvg/resvg-js"],
     },
     build: {
-      cssCodeSplit: true,
-      sourcemap: false,
+      cssCodeSplit: false, // 禁用 CSS 分离加载，减少加载延迟
+      sourcemap: true, // 启用 sourcemap 以便调试
       minify: 'terser',
       terserOptions: {
         compress: {
