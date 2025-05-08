@@ -6,7 +6,6 @@ import remarkCollapse from "remark-collapse";
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { SITE } from "./src/config";
-import AstroPWA from '@vite-pwa/astro';
 
 import react from "@astrojs/react";
 
@@ -18,70 +17,6 @@ export default defineConfig({
       filter: page => SITE.showArchives || !page.endsWith("/archives"),
     }), 
     react(),
-    // PWA 集成
-    AstroPWA({
-      registerType: 'autoUpdate',
-      manifest: {
-        name: SITE.title,
-        short_name: SITE.title,
-        description: SITE.desc,
-        theme_color: '#ffffff',
-        background_color: '#ffffff',
-        icons: [
-          {
-            src: 'pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png',
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any maskable',
-          },
-        ],
-      },
-      workbox: {
-        navigateFallback: '/',
-        globPatterns: ['**/*.{css,js,html,svg,png,ico,jpg,jpeg,webp}'],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'google-fonts-cache',
-              expiration: {
-                maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365, // <== 365 days
-              },
-              cacheableResponse: {
-                statuses: [0, 200],
-              },
-            },
-          },
-          {
-            urlPattern: /\.(?:png|jpg|jpeg|svg|webp|ico)$/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'image-cache',
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 天
-              },
-            },
-          },
-        ],
-      },
-      devOptions: {
-        enabled: true,
-        navigateFallbackAllowlist: [/^\/404$/],
-      },
-    }),
   ],
   markdown: {
     remarkPlugins: [remarkToc, [remarkCollapse, { test: "Table of contents" }], remarkMath],
