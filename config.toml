@@ -23,12 +23,12 @@ seed = 42
 neg_sample_ratio = 5.0
 
 [fit_predict.confidence_weighted_sampling]
-enable = true
+enable = false
 high_conf_threshold = 0.9
 high_conf_weight = 2.0
 
 [fit_predict.adaptive_difficulty_sampling]
-enable = true
+enable = false
 n_neighbors = 64
 pos_sampling_ratio = 2.0
 synthetic_ratio = 0.5
