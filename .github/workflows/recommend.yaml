@@ -10,7 +10,7 @@ on:
         type: number
   schedule:
     # 东八区(UTC+8)早8点 = UTC 0点
-    - cron: '0 0 * * *'
+    - cron: '30 1 * * *'
 
 jobs:
   prepare_data:
