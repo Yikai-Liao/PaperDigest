@@ -97,6 +97,7 @@ def summarize(paper_path: Path, example: str, api_key: str, base_url: str, model
     Also, please provide a URL-friendly string that summarizes the title of the research (slug).
     Although I talked to you in English, but you need to make sure that your answer is in {lang}.
     Also, you need to know that, your structured answer will rendered in markdown, so please also use the markdown syntax, especially for latex formula using $...$ or $$...$$.
+    Do not hide your critical thoughts in the reasoning step. Show them in method and further though parts.
     """
     
     # 估算prompt和system message的token数
