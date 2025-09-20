@@ -61,17 +61,6 @@ jobs:
             pnpm install
             pnpm run build
 
-      - name: Rsync to VPS
-        uses: burnett01/rsync-deployments@7.0.2
-        with:
-          switches: -avzr --delete
-          path: website/dist/
-          remote_path: /var/website
-          remote_host: ${{ secrets.VPS_IP }}
-          remote_user: root
-          remote_key: ${{ secrets.VPS_PRIVATE_KEY }}
-
-
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
