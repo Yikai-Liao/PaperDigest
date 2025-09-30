@@ -10,3 +10,4 @@ openai
 jinja2
 pydantic
 tiktoken
+psutil
