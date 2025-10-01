@@ -24,6 +24,7 @@ dependencies = [
     "psutil",
     "requests",
     "google-genai",
+    "latex2json @ git+https://github.com/mrlooi/latex2json.git",
 ]
 
 [project.optional-dependencies]
