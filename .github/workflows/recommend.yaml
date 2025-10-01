@@ -199,7 +199,7 @@ jobs:
           
           if [ $pdf_count -gt 0 ]; then
             # 使用 marker 处理整个目录
-            marker "$BATCH_DIR" --disable_image_extraction --output_dir ./extracted_mds --workers 2
+            uv run marker "$BATCH_DIR" --disable_image_extraction --output_dir ./extracted_mds --workers 2
             
             # 统计处理结果
             md_count=$(find ./extracted_mds -name "*.md" | wc -l)
