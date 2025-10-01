@@ -197,9 +197,20 @@ jobs:
             # 使用 marker 处理整个目录（单 worker 避免模型下载冲突）
             uv run marker "$BATCH_DIR" --disable_image_extraction --output_dir ./extracted_mds --workers 1
             
-            # 统计处理结果
-            md_count=$(find ./extracted_mds -name "*.md" | wc -l)
-            echo "成功提取了 $md_count 个 Markdown 文件"
+            # 🔧 修复 marker-pdf 1.10.1 输出目录结构问题
+            # marker-pdf 1.10.1 将 .md 文件生成在子目录中，需要移到顶层
+            echo "修复 marker 输出目录结构..."
+            bash script/fix_marker_output.sh ./extracted_mds
+            
+            # 统计处理结果（修复后应该能找到文件了）
+            md_count=$(find ./extracted_mds -maxdepth 1 -name "*.md" -type f | wc -l)
+            echo "✅ 成功提取了 $md_count 个 Markdown 文件"
+            
+            # 验证是否有文件
+            if [ $md_count -eq 0 ]; then
+              echo "❌ 错误: 没有生成 Markdown 文件"
+              exit 1
+            fi
           else
             echo "该批次没有 PDF 文件，跳过处理"
           fi
