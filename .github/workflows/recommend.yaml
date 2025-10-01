@@ -147,6 +147,7 @@ jobs:
     strategy:
       matrix:
         batch: ${{ fromJson(needs.prepare_data.outputs.batch_list) }}
+      max-parallel: 2  # 限制并发数，避免同时下载模型导致冲突
       fail-fast: false
 
     steps:
@@ -174,6 +175,11 @@ jobs:
       - name: 安装依赖（包括 marker-pdf）
         run: uv sync --extra marker
 
+      - name: 预热 marker 模型缓存
+        run: |
+          # 预先下载模型，避免多个 worker 同时下载导致冲突
+          uv run python -c "from marker.models import load_all_models; load_all_models()" || true
+
       - name: 处理 PDF 文件
         run: |
           # 创建输出目录
@@ -188,8 +194,8 @@ jobs:
           echo "该批次包含 $pdf_count 个 PDF 文件"
           
           if [ $pdf_count -gt 0 ]; then
-            # 使用 marker 处理整个目录
-            uv run marker "$BATCH_DIR" --disable_image_extraction --output_dir ./extracted_mds --workers 2
+            # 使用 marker 处理整个目录（单 worker 避免模型下载冲突）
+            uv run marker "$BATCH_DIR" --disable_image_extraction --output_dir ./extracted_mds --workers 1
             
             # 统计处理结果
             md_count=$(find ./extracted_mds -name "*.md" | wc -l)
