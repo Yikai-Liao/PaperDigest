@@ -131,6 +131,48 @@ def load_lazy_dataset(config, preferences: pl.DataFrame):
             .with_columns(pl.col("updated").str.slice(0, 4).cast(pl.Int32).alias("year"))\
             .filter(pl.col("year") >= backgroud_start_year)
 
+    # 🔧 修复: 过滤掉 embedding 有问题的行
+    # 根据诊断发现:
+    # 1. jasper_v1 列的向量内部包含 NaN 值 (约30% 的向量全是 NaN)
+    # 2. 这不是 null 值问题,而是向量内容本身就是 [NaN, NaN, ...]
+    # 3. 需要检查向量内部是否包含 NaN,不只是检查是否为 null
+    embedding_columns = config.get("embedding_columns", ["jasper_v1", "conan_v1"])
+    
+    logger.info("开始过滤含 NaN 的 embedding 向量...")
+    
+    # 计算过滤前的数量
+    prefered_count_before = prefered_df.select(pl.count()).collect()[0, 0]
+    remaining_count_before = remaining_df.select(pl.count()).collect()[0, 0]
+    
+    # 方法: 使用 polars 的 list.eval 检查向量内部是否有 NaN
+    # 但由于 polars 无法直接检查 list 内部的 NaN,我们需要在收集时过滤
+    # 这里先过滤 null 值作为初步清洗
+    null_filter = pl.col(embedding_columns[0]).is_not_null()
+    for col in embedding_columns[1:]:
+        null_filter = null_filter & pl.col(col).is_not_null()
+    
+    prefered_df = prefered_df.filter(null_filter)
+    remaining_df = remaining_df.filter(null_filter)
+    
+    # 计算过滤后的数量
+    prefered_count_after = prefered_df.select(pl.count()).collect()[0, 0]
+    remaining_count_after = remaining_df.select(pl.count()).collect()[0, 0]
+    
+    # 记录过滤结果
+    prefered_removed = prefered_count_before - prefered_count_after
+    remaining_removed = remaining_count_before - remaining_count_after
+    
+    if prefered_removed > 0 or remaining_removed > 0:
+        logger.warning(f"过滤了 embedding 为 null 的样本:")
+        logger.warning(f"  prefered: 移除 {prefered_removed}/{prefered_count_before} ({prefered_removed/prefered_count_before*100:.2f}%)")
+        logger.warning(f"  remaining: 移除 {remaining_removed}/{remaining_count_before} ({remaining_removed/remaining_count_before*100:.2f}%)")
+    else:
+        logger.info("✅ 没有 embedding 为 null 的样本")
+    
+    logger.warning("⚠️  注意: jasper_v1 向量内部可能仍包含 NaN 值 (约30%)")
+    logger.warning("    这些 NaN 会在训练时被替换为 0")
+    logger.warning("    建议联系数据团队修复 jasper_v1 的 embedding 生成问题")
+
     return prefered_df, remaining_df
 
 
@@ -229,14 +271,27 @@ def adaptive_difficulty_sampling(
         # 计算每个正样本到背景数据的平均距离作为难度指标
         # 距离更近的正样本表示更接近决策边界，学习难度更大
         
-        # 检查并处理 NaN 值
-        if np.isnan(x_pos).any():
-            logger.warning(f"正样本数据中发现 NaN 值，将替换为 0")
-            x_pos = np.nan_to_num(x_pos, nan=0.0)
+        # 🔍 NaN 诊断: 检查输入数据
+        logger.info(f"[NaN诊断-ADS] x_pos shape: {x_pos.shape}, unlabeled_data shape: {unlabeled_data.shape}")
         
-        if np.isnan(unlabeled_data).any():
-            logger.warning(f"背景数据中发现 NaN 值，将替换为 0")
+        # 检查并处理 NaN 值
+        nan_in_xpos = np.isnan(x_pos).sum()
+        if nan_in_xpos > 0:
+            logger.warning(f"[NaN诊断-ADS] 正样本数据中发现 {nan_in_xpos} 个 NaN 值，将替换为 0")
+            rows_with_nan = np.where(np.isnan(x_pos).any(axis=1))[0]
+            logger.warning(f"[NaN诊断-ADS] 正样本中有 {len(rows_with_nan)} 行包含 NaN")
+            x_pos = np.nan_to_num(x_pos, nan=0.0)
+        else:
+            logger.info(f"[NaN诊断-ADS] ✅ 正样本数据没有 NaN")
+        
+        nan_in_unlabeled = np.isnan(unlabeled_data).sum()
+        if nan_in_unlabeled > 0:
+            logger.warning(f"[NaN诊断-ADS] 背景数据中发现 {nan_in_unlabeled} 个 NaN 值，将替换为 0")
+            rows_with_nan = np.where(np.isnan(unlabeled_data).any(axis=1))[0]
+            logger.warning(f"[NaN诊断-ADS] 背景数据中有 {len(rows_with_nan)} 行包含 NaN")
             unlabeled_data = np.nan_to_num(unlabeled_data, nan=0.0)
+        else:
+            logger.info(f"[NaN诊断-ADS] ✅ 背景数据没有 NaN")
         
         # 1. 对背景数据建立KNN模型
         nn_background = NearestNeighbors(n_neighbors=min(n_neighbors, unlabeled_data.shape[0]))
@@ -384,20 +439,78 @@ def train_model(prefered_df: pl.DataFrame, remaining_df: pl.DataFrame, config: d
 
     # combine 
     combined_df = pl.concat([prefered_df, pesudo_neg_df], how="vertical")
-    logger.info(f"Combined DataFrame size: {combined_df.height} rows")
+    logger.info(f"Combined DataFrame size (before NaN filtering): {combined_df.height} rows")
+
+    # 🔧 过滤向量内部包含 NaN 的样本
+    # 策略: 先转换为 numpy 检查,然后过滤
+    logger.info(f"开始过滤向量内部包含 NaN 的样本...")
+    
+    # 逐列检查 NaN
+    nan_mask = np.zeros(combined_df.height, dtype=bool)
+    for col in embedding_columns:
+        col_data = combined_df[col].to_list()
+        for i, vec in enumerate(col_data):
+            if vec is None or (isinstance(vec, (list, np.ndarray)) and np.isnan(vec).any()):
+                nan_mask[i] = True
+    
+    # 过滤保留有效行
+    removed_count = nan_mask.sum()
+    if removed_count > 0:
+        logger.warning(f"过滤了 {removed_count}/{len(combined_df)} ({removed_count/len(combined_df)*100:.2f}%) 个含 NaN 的样本")
+        # 使用 polars 的 filter 按行过滤
+        combined_df = combined_df.with_row_index("__idx__")
+        valid_indices = np.where(~nan_mask)[0]
+        combined_df = combined_df.filter(pl.col("__idx__").is_in(valid_indices)).drop("__idx__")
+        logger.info(f"Combined DataFrame size (after NaN filtering): {combined_df.height} rows")
+    else:
+        logger.info(f"✅ 没有向量内部包含 NaN 的样本")
+
+    # 🔍 NaN 诊断: 检查原始数据中的 None 值
+    logger.info(f"[NaN诊断] 开始检查过滤后的 combined_df")
+    for col in embedding_columns:
+        col_data = combined_df[col].to_list()
+        none_count = sum(1 for x in col_data if x is None)
+        if none_count > 0:
+            logger.warning(f"[NaN诊断] 列 '{col}' 有 {none_count} 个 None 值 ({none_count/len(col_data)*100:.2f}%)")
+            # 找出 None 值的论文 ID
+            if 'id' in combined_df.columns:
+                none_indices = [i for i, x in enumerate(col_data) if x is None][:5]
+                none_ids = [combined_df['id'][i] for i in none_indices]
+                logger.warning(f"[NaN诊断] None 值的论文ID示例: {none_ids}")
 
     # convert to numpy array, where x should be the concatenated embedding columns
     # and y should be the label column
-    # x = combined_df.select(*embedding_columns).to_numpy()
-    x = np.hstack([np.vstack(combined_df[col].to_numpy()) for col in embedding_columns])
+    # 🔍 NaN 诊断: 逐列转换并检查
+    logger.info(f"[NaN诊断] 开始逐列转换为 numpy 数组")
+    arrays = []
+    for col in embedding_columns:
+        try:
+            col_arr = np.vstack(combined_df[col].to_numpy())
+            nan_count = np.isnan(col_arr).sum()
+            logger.info(f"[NaN诊断] 列 '{col}' vstack后: shape={col_arr.shape}, NaN数量={nan_count}")
+            if nan_count > 0:
+                rows_with_nan = np.where(np.isnan(col_arr).any(axis=1))[0]
+                logger.warning(f"[NaN诊断] 列 '{col}' 中有 {len(rows_with_nan)} 行包含 NaN")
+                logger.warning(f"[NaN诊断] 前10个NaN行索引: {rows_with_nan[:10].tolist()}")
+            arrays.append(col_arr)
+        except Exception as e:
+            logger.error(f"[NaN诊断] 列 '{col}' 转换失败: {e}")
+            raise
+    
+    x = np.hstack(arrays)
     y = combined_df.select("label").to_numpy().ravel()
+    logger.info(f"[NaN诊断] hstack后: shape={x.shape}")
     
     samples_with_nan = np.isnan(x).any(axis=1).sum()
-    logger.warning(f"{samples_with_nan}个样本 ({samples_with_nan/x.shape[0]*100:.2f}%) 包含NaN值")
+    if samples_with_nan > 0:
+        logger.warning(f"[NaN诊断] 最终检测: {samples_with_nan}个样本 ({samples_with_nan/x.shape[0]*100:.2f}%) 包含NaN值")
+    else:
+        logger.info(f"[NaN诊断] ✅ 最终检测: 没有NaN值!")
     
     # 方法1：用0填充NaN (简单方法)
-    x = np.nan_to_num(x, nan=0.0)
-    logger.info("已将所有NaN值替换为0")
+    if samples_with_nan > 0:
+        x = np.nan_to_num(x, nan=0.0)
+        logger.info("已将所有NaN值替换为0")
 
     logger.info(f"x: {x.dtype} | {x.shape}, y shape: {y.dtype} | {y.shape}")
     lg_config = config.get("logistic_regression", {})
@@ -503,16 +616,58 @@ def predict_and_recommend(model, remaining_df: pl.LazyFrame, recommended_df: pl.
     
     logger.info(f"目标数据收集完成，共 {target_df.height} 条记录")
     
+    # 🔧 过滤向量内部包含 NaN 的样本 (预测阶段)
+    logger.info(f"开始过滤预测数据中向量内部包含 NaN 的样本...")
+    
+    nan_mask = np.zeros(target_df.height, dtype=bool)
+    for col in embedding_columns:
+        col_data = target_df[col].to_list()
+        for i, vec in enumerate(col_data):
+            if vec is None or (isinstance(vec, (list, np.ndarray)) and np.isnan(vec).any()):
+                nan_mask[i] = True
+    
+    removed_count = nan_mask.sum()
+    if removed_count > 0:
+        logger.warning(f"过滤了 {removed_count}/{target_df.height} ({removed_count/target_df.height*100:.2f}%) 个含 NaN 的样本")
+        target_df = target_df.with_row_index("__idx__")
+        valid_indices = np.where(~nan_mask)[0]
+        target_df = target_df.filter(pl.col("__idx__").is_in(valid_indices)).drop("__idx__")
+        logger.info(f"目标数据过滤后: {target_df.height} 条记录")
+    else:
+        logger.info(f"✅ 预测数据没有向量内部包含 NaN 的样本")
+    
     # 4. 提取特征和预测
     logger.info("提取特征并进行预测...")
+    
+    # 🔍 NaN 诊断: 检查预测数据
+    logger.info(f"[NaN诊断-预测] 开始检查过滤后的预测数据")
+    for col in embedding_columns:
+        col_data = target_df[col].to_list()
+        none_count = sum(1 for x in col_data if x is None)
+        if none_count > 0:
+            logger.warning(f"[NaN诊断-预测] 列 '{col}' 有 {none_count} 个 None 值 ({none_count/len(col_data)*100:.2f}%)")
+    
     # X_target = target_df.select(*embedding_columns).to_numpy()
-    X_target = np.hstack([np.vstack(target_df[col].to_numpy()) for col in embedding_columns])
+    arrays = []
+    for col in embedding_columns:
+        col_arr = np.vstack(target_df[col].to_numpy())
+        nan_count = np.isnan(col_arr).sum()
+        if nan_count > 0:
+            logger.warning(f"[NaN诊断-预测] 列 '{col}' vstack后有 {nan_count} 个 NaN")
+        arrays.append(col_arr)
+    
+    X_target = np.hstack(arrays)
+    logger.info(f"[NaN诊断-预测] X_target shape: {X_target.shape}")
     
     # 处理 NaN 值
     nan_count = np.isnan(X_target).sum()
     if nan_count > 0:
-        logger.warning(f"预测数据中发现 {nan_count} 个 NaN 值，将替换为 0")
+        logger.warning(f"[NaN诊断-预测] 最终检测: 预测数据中发现 {nan_count} 个 NaN 值 ({nan_count/X_target.size*100:.4f}%)，将替换为 0")
+        rows_with_nan = np.where(np.isnan(X_target).any(axis=1))[0]
+        logger.warning(f"[NaN诊断-预测] 有 {len(rows_with_nan)} 行包含 NaN")
         X_target = np.nan_to_num(X_target, nan=0.0)
+    else:
+        logger.info(f"[NaN诊断-预测] ✅ 预测数据没有 NaN")
     
     # 使用模型预测"喜欢"的概率
     try:
