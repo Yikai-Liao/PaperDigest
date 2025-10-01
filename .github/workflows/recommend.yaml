@@ -181,8 +181,8 @@ jobs:
           path: /home/runner/.cache/huggingface
           key: ${{ runner.os }}-huggingface-marker
 
-      - name: 安装 marker-pdf
-        run: uv pip install marker-pdf
+      - name: 安装依赖（包括 marker-pdf）
+        run: uv sync --extra marker
 
       - name: 处理 PDF 文件
         run: |

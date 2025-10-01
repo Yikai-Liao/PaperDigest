@@ -19,5 +19,10 @@ dependencies = [
     "google-genai",
 ]
 
+[project.optional-dependencies]
+marker = [
+    "marker-pdf",
+]
+
 [tool.uv]
 package = false
