@@ -2,10 +2,11 @@
 
 ## 📋 问题概述
 
-GitHub Actions 工作流在运行 `fit_predict.py` 时遇到以下错误：
+GitHub Actions 工作流在运行管道时遇到以下错误：
 
 1. **FileNotFoundError**: `/home/runner/work/PaperDigest/PaperDigest/data/predictions.parquet` 目录不存在
 2. **ValueError**: Input X contains NaN - sklearn 的 `NearestNeighbors` 和 `LogisticRegression` 不接受包含 NaN 的数据
+3. **uv 错误**: `uv pip install` 命令需要虚拟环境，但 GitHub Actions 环境中没有激活
 
 ## 🔍 根本原因分析
 
@@ -172,8 +173,9 @@ model = HistGradientBoostingClassifier()
 - 🧪 评估不同填充策略对模型性能的影响
 - 📈 添加数据质量指标到日志中
 
-## 🎯 提交信息
+## 🎯 提交历史
 
+### 1. 修复 NaN 值处理和目录创建 (`c90f351`)
 ```
 fix: handle NaN values in prediction pipeline and ensure data directory exists
 
@@ -183,5 +185,48 @@ fix: handle NaN values in prediction pipeline and ensure data directory exists
 - Fixes FileNotFoundError and ValueError related to NaN values
 ```
 
-**Commit**: `c90f351`
 **修改文件**: `script/fit_predict.py` (+18 行)
+
+### 2. 修复 uv 依赖管理 (`4999af7`)
+```
+fix: use optional dependencies for marker-pdf instead of uv pip install
+
+- Add [project.optional-dependencies] section in pyproject.toml
+- Define 'marker' extra with marker-pdf dependency
+- Update workflow to use 'uv sync --extra marker'
+- Avoid using 'uv pip install' which requires virtual environment
+```
+
+**问题**: 
+- ❌ `uv pip install marker-pdf` 在 GitHub Actions 中失败
+- 错误信息: `error: No virtual environment found; run 'uv venv' to create an environment, or pass '--system' to install into a non-virtual environment`
+
+**根本原因**:
+- `uv pip install` 需要在激活的虚拟环境中运行，或使用 `--system` 标志
+- 直接使用 `uv pip install` 不符合 uv 的最佳实践
+
+**正确做法**:
+1. 在 `pyproject.toml` 中定义可选依赖：
+```toml
+[project.optional-dependencies]
+marker = [
+    "marker-pdf",
+]
+```
+
+2. 在工作流中使用 `uv sync --extra marker` 安装：
+```yaml
+- name: 安装依赖（包括 marker-pdf）
+  run: uv sync --extra marker
+```
+
+**优势**:
+- ✅ 符合 uv 的声明式依赖管理理念
+- ✅ 不需要虚拟环境，uv 自动管理
+- ✅ 依赖关系清晰，易于维护
+- ✅ 支持锁文件 (`uv.lock`)，确保可重复构建
+
+**修改文件**: 
+- `pyproject.toml` (+4 行)
+- `.github/workflows/recommend.yaml` (+1 行, -1 行)
+
