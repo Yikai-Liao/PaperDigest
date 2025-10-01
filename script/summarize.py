@@ -12,6 +12,9 @@ import datetime
 import os
 import tiktoken  # 添加tiktoken库来计算token数量
 
+# Import Gemini handler for gemini models
+from gemini_handler import GeminiHandler
+
 
 REPO_DIR = Path(__file__).resolve().parent.parent
 # 定义模型的最大标记限制
@@ -75,6 +78,21 @@ class PaperSummary(BaseModel):
 def summarize(paper_path: Path, example: str, api_key: str, base_url: str, model: str, temperature: float, top_p: float, reasoning_effort: str, lang: str, keywords: list[str]) -> dict:
     paper = paper_path.read_text(encoding='utf-8')
     paper = paper.split("# Reference")[0] # 只保留正文部分
+    
+    # Use Gemini handler for gemini models
+    if model.lower().startswith('gemini'):
+        handler = GeminiHandler(api_key=api_key, model=model)
+        system_prompt = handler.create_prompt(example, lang, keywords)
+        return handler.summarize_single(
+            paper_content=paper,
+            system_prompt=system_prompt,
+            temperature=temperature,
+            top_p=top_p,
+            paper_id=paper_path.stem,
+            lang=lang
+        )
+    
+    # Use OpenAI-compatible API for other models
     client = OpenAI(
         api_key=api_key,
         base_url=base_url,
@@ -148,8 +166,58 @@ def summarize(paper_path: Path, example: str, api_key: str, base_url: str, model
             'summary_time': datetime.datetime.now(datetime.timezone.utc).isoformat()
         }
 
-def summarize_batch(paper_paths: List[Path], example: str, api_key: str, base_url: str, model: str, temperature: float, top_p: float, reasoning_effort: str, lang: str, keywords: list[str], num_workers: int = 1):
-    """Summarize a batch of papers using a thread pool."""
+def summarize_batch(paper_paths: List[Path], example: str, api_key: str, base_url: str, model: str, temperature: float, top_p: float, reasoning_effort: str, lang: str, keywords: list[str], num_workers: int = 1, use_batch_api: bool = False):
+    """Summarize a batch of papers using a thread pool or batch API."""
+    
+    # Filter out papers that already have summaries
+    papers_to_process = []
+    for path in paper_paths:
+        output_path = path.with_suffix('.json')
+        if output_path.exists():
+            print(f"Summary already exists at {output_path}, skipping...")
+        else:
+            papers_to_process.append(path)
+    
+    if not papers_to_process:
+        print("All papers already have summaries. Nothing to process.")
+        return []
+    
+    print(f"Processing {len(papers_to_process)} papers (skipped {len(paper_paths) - len(papers_to_process)} existing summaries)")
+    
+    # Use Gemini Batch API for gemini models when use_batch_api is True
+    if model.lower().startswith('gemini') and use_batch_api:
+        print(f"Using Gemini Batch API for {len(papers_to_process)} papers (50% cost savings)")
+        handler = GeminiHandler(api_key=api_key, model=model)
+        results = handler.summarize_batch(
+            paper_paths=papers_to_process,
+            example=example,
+            lang=lang,
+            keywords=keywords,
+            temperature=temperature,
+            top_p=top_p,
+            use_batch_api=True,
+            output_dir=None  # We'll save files manually below
+        )
+        
+        # Save results to individual JSON files
+        for result in results:
+            if 'error' not in result and 'id' in result:
+                paper_id = result['id']
+                # Find the original path
+                output_path = None
+                for path in papers_to_process:
+                    if path.stem == paper_id:
+                        output_path = path.with_suffix('.json')
+                        break
+                
+                if output_path:
+                    with open(output_path, 'w', encoding='utf-8') as f:
+                        json.dump(result, f, ensure_ascii=False, indent=4)
+                    print(f"Summary saved to {output_path}")
+        
+        return results
+    
+    # Fall back to parallel or sequential processing for non-Gemini or when batch API is disabled
     if num_workers > 1:
         with Pool(num_workers) as pool:
             tasks = [(path, example, api_key, base_url, model, temperature, top_p, reasoning_effort, lang, keywords) for path in paper_paths]
@@ -250,13 +318,17 @@ def main() -> None:
     top_p = config['top_p']
     reasoning_effort = config.get('reasoning_effort', None)
     num_workers = config.get('num_workers', 1)
+    use_batch_api = config.get('use_batch_api', False)  # Enable Batch API for cost savings
+    
     with open(REPO_DIR / "keywords.json", 'r', encoding='utf-8') as f:
         keywords = json.load(f)
     print(f"Loaded {len(keywords)} keywords from keywords.json")
     
     print(f"Summarizing {len(paper_path)} papers with {num_workers} workers...")
+    print(f"Model: {model}, Batch API: {use_batch_api}")
+    
     # 直接调用summarize_batch，已经在函数内完成了文件保存
-    summarize_batch(paper_path, example, api_key, base_url, model, temperature, top_p, reasoning_effort, lang, keywords, num_workers)
+    summarize_batch(paper_path, example, api_key, base_url, model, temperature, top_p, reasoning_effort, lang, keywords, num_workers, use_batch_api)
 
 if __name__ == "__main__":
     main()

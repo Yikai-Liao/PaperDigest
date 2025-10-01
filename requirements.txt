@@ -11,3 +11,5 @@ jinja2
 pydantic
 tiktoken
 psutil
+requests
+google-genai

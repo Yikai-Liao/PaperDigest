@@ -57,10 +57,11 @@ max_retry = 3
 # Replace with your actual API key if needed, or leave empty if using environment variables
 api_key = "env" 
 # Replace with your OpenAI-compatible API base URL
-base_url = "https://api.x.ai/v1" 
-# base_url = "https://generativelanguage.googleapis.com/v1beta/openai/"
+# base_url = "https://api.x.ai/v1" 
+base_url = "https://generativelanguage.googleapis.com/v1beta/openai/"
 # Specify the model to use
-model = "grok-3"
+# model = "grok-3"
+model = "gemini-2.5-flash"
 # Sampling temperature
 temperature = 0.1
 # Top-p nucleus sampling
@@ -68,3 +69,6 @@ top_p = 0.8
 max_concurrent = 1 
 # reasoning_effort = "high"
 num_workers = 2
+# Use Batch API for Gemini models (50% cost savings, but 24h turnaround)
+# Set to true for production, false for immediate testing
+use_batch_api = true

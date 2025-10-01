@@ -1,0 +1,23 @@
+[project]
+name = ""
+version = "0.0.1"
+dependencies = [
+    "scikit-learn",
+    "numpy",
+    "polars",
+    "tqdm",
+    "arxiv",
+    "toml",
+    "loguru",
+    "huggingface-hub[cli]",
+    "openai",
+    "jinja2",
+    "pydantic",
+    "tiktoken",
+    "psutil",
+    "requests",
+    "google-genai",
+]
+
+[tool.uv]
+package = false
