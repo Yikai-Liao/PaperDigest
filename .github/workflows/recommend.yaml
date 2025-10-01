@@ -22,25 +22,28 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
-          cache: 'pip'
-          cache-dependency-path: requirements.txt
+          python-version: '3.12'
 
       - name: 安装依赖
         run: |
-          pip install -r requirements.txt
+          uv sync
 
       - name: Hugging Face 登录
         env:
           HUGGINGFACE_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
         run: |
-          huggingface-cli login --token $HUGGINGFACE_TOKEN
+          uv run huggingface-cli login --token $HUGGINGFACE_TOKEN
 
       - name: 运行预测模型
-        run: python script/fit_predict.py
+        run: uv run python script/fit_predict.py
 
       - name: 上传预测结果
         uses: actions/upload-artifact@v4
@@ -49,7 +52,7 @@ jobs:
           path: predictions.parquet
         
       - name: 下载 PDF 文件
-        run: python script/download_pdf.py
+        run: uv run python script/download_pdf.py
 
       - name: 拆分 PDF 目录
         id: split_dirs
@@ -155,12 +158,15 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
-          cache: 'pip'
-          cache-dependency-path: requirements.txt
+          python-version: '3.12'
 
       - name: 下载 PDF 批次
         uses: actions/download-artifact@v4
@@ -176,7 +182,7 @@ jobs:
           key: ${{ runner.os }}-huggingface-marker
 
       - name: 安装 marker-pdf
-        run: pip install marker-pdf
+        run: uv pip install marker-pdf
 
       - name: 处理 PDF 文件
         run: |
@@ -214,8 +220,8 @@ jobs:
         env:
           SUMMARY_API_KEY: ${{ secrets.SUMMARY_API_KEY }}
         run: |
-          pip install -r requirements.txt
-          python script/summarize.py ./extracted_mds/ --lang zh
+          uv sync
+          uv run python script/summarize.py ./extracted_mds/ --lang zh
 
       - name: 上传 AI 摘要结果
         uses: actions/upload-artifact@v4
@@ -231,12 +237,13 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
-          cache: 'pip'
-          cache-dependency-path: requirements.txt
+          python-version: '3.12'
         
       - name: 下载所有 artifact
         uses: actions/download-artifact@v4
@@ -282,8 +289,8 @@ jobs:
 
       - name: 更新 json 元数据
         run: |
-          pip install -r requirements.txt
-          python script/update_metadata.py -j merged_jsons -p predictions.parquet
+          uv sync
+          uv run python script/update_metadata.py -j merged_jsons -p predictions.parquet
 
       - name: 上传合并后的 JSON 文件
         uses: actions/upload-artifact@v4
@@ -294,7 +301,7 @@ jobs:
 
       - name: 合并 JSON 文件到 Parquet
         run: |
-          python script/json2parquet.py merged_jsons main.parquet
+          uv run python script/json2parquet.py merged_jsons main.parquet
 
       - name: 上传合并后的 Parquet 文件
         uses: actions/upload-artifact@v4
@@ -308,7 +315,7 @@ jobs:
           HUGGINGFACE_TOKEN: ${{ secrets.HUGGINGFACE_TOKEN }}
         run: |
           # 上传到 Hugging Face
-          python script/upload2hg.py main.parquet main.parquet lyk/PaperDigestDataBase
+          uv run python script/upload2hg.py main.parquet main.parquet lyk/PaperDigestDataBase
 
   trigger_build:
     name: 触发构建Workflow
