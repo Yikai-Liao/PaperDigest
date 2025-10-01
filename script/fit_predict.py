@@ -229,6 +229,15 @@ def adaptive_difficulty_sampling(
         # 计算每个正样本到背景数据的平均距离作为难度指标
         # 距离更近的正样本表示更接近决策边界，学习难度更大
         
+        # 检查并处理 NaN 值
+        if np.isnan(x_pos).any():
+            logger.warning(f"正样本数据中发现 NaN 值，将替换为 0")
+            x_pos = np.nan_to_num(x_pos, nan=0.0)
+        
+        if np.isnan(unlabeled_data).any():
+            logger.warning(f"背景数据中发现 NaN 值，将替换为 0")
+            unlabeled_data = np.nan_to_num(unlabeled_data, nan=0.0)
+        
         # 1. 对背景数据建立KNN模型
         nn_background = NearestNeighbors(n_neighbors=min(n_neighbors, unlabeled_data.shape[0]))
         nn_background.fit(unlabeled_data)
@@ -499,6 +508,12 @@ def predict_and_recommend(model, remaining_df: pl.LazyFrame, recommended_df: pl.
     # X_target = target_df.select(*embedding_columns).to_numpy()
     X_target = np.hstack([np.vstack(target_df[col].to_numpy()) for col in embedding_columns])
     
+    # 处理 NaN 值
+    nan_count = np.isnan(X_target).sum()
+    if nan_count > 0:
+        logger.warning(f"预测数据中发现 {nan_count} 个 NaN 值，将替换为 0")
+        X_target = np.nan_to_num(X_target, nan=0.0)
+    
     # 使用模型预测"喜欢"的概率
     try:
         target_scores = model.predict_proba(X_target)[:, 1]
@@ -687,6 +702,9 @@ def predict_and_save(model, remaining_df, recommended_df, config):
         results_df = results_df.drop(*embedding_columns)
     # 保存结果到CSV
     output_file = REPO_ROOT / "data" / "predictions.parquet"
+    
+    # 确保目录存在
+    output_file.parent.mkdir(parents=True, exist_ok=True)
     
     # 保存
     results_df.write_parquet(output_file)
