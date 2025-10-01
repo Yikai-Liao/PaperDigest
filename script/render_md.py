@@ -10,7 +10,7 @@ import huggingface_hub as hfh
 
 REPO_DIR = Path(__file__).resolve().parent.parent
 OUTPUT_DIR = REPO_DIR / "content"
-TEMPLATE_PATH = REPO_DIR / "template.j2"
+TEMPLATE_PATH = REPO_DIR / "config" / "template.j2"
 
 if __name__ == "__main__":
     config = toml.load(REPO_DIR / "config.toml")

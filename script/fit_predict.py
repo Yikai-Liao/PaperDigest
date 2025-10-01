@@ -686,7 +686,7 @@ def predict_and_save(model, remaining_df, recommended_df, config):
     if embedding_columns:
         results_df = results_df.drop(*embedding_columns)
     # 保存结果到CSV
-    output_file = REPO_ROOT / "predictions.parquet"
+    output_file = REPO_ROOT / "data" / "predictions.parquet"
     
     # 保存
     results_df.write_parquet(output_file)

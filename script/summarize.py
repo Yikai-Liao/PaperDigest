@@ -305,7 +305,7 @@ def main() -> None:
     else:
         raise ValueError(f"Invalid path: {paper_path}. Please provide a valid file or directory.")
 
-    example = (REPO_DIR / f"summary_example_{lang}.json").read_text(encoding='utf-8')
+    example = (REPO_DIR / "examples" / f"summary_example_{lang}.json").read_text(encoding='utf-8')
     config = toml.load(REPO_DIR / "config.toml")['summary']
     api_key = config['api_key']
     if api_key == "env":
@@ -320,7 +320,7 @@ def main() -> None:
     num_workers = config.get('num_workers', 1)
     use_batch_api = config.get('use_batch_api', False)  # Enable Batch API for cost savings
     
-    with open(REPO_DIR / "keywords.json", 'r', encoding='utf-8') as f:
+    with open(REPO_DIR / "config" / "keywords.json", 'r', encoding='utf-8') as f:
         keywords = json.load(f)
     print(f"Loaded {len(keywords)} keywords from keywords.json")
     

@@ -92,7 +92,7 @@ def download_papers(paper_ids: list[str], output_dir: Path, delay: int = 3, max_
 
 if __name__ == "__main__":
     # Read the parquet file
-    path = REPO_ROOT / "predictions.parquet"
+    path = REPO_ROOT / "data" / "predictions.parquet"
     logger.info(f"Reading parquet file from {path}")
     df = pl.read_parquet(path)
 
