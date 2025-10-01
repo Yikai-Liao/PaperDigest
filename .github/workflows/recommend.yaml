@@ -27,11 +27,6 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
       - name: 安装依赖
         run: |
           uv sync
@@ -163,11 +158,6 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
       - name: 下载 PDF 批次
         uses: actions/download-artifact@v4
         with:
@@ -239,11 +229,8 @@ jobs:
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
-        
-      - name: Setup Python
-        uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          enable-cache: true
         
       - name: 下载所有 artifact
         uses: actions/download-artifact@v4
